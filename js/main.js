@@ -15,6 +15,62 @@ document.addEventListener("DOMContentLoaded", () => {
   // Stato lock/reset
   let isLocked = false;      // 🔒 blocco attivo finché non fai reset
   let lockNotified = false;  // evita multipli "Se non resetti..."
+  let currentShippingType = "italia"; // Tipo di spedizione corrente
+
+  // ===== Dati tariffe spedizioni =====
+
+  // Zone Italia (già implementate)
+  const zoneItaliaCAP = {
+    A: ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "50", "51", "52", "53", "54", "55", "56", "57", "59"],
+    B: ["58", "60", "61", "62", "63", "64", "65", "66", "67", "70", "71", "72", "73", "74", "75", "76", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89"],
+    C: ["90", "91", "92", "93", "94", "95", "96", "97", "98"]
+  };
+
+  // Paesi Europa (UE + alcuni extra-UE europei)
+  const paesiEuropa = {
+    // Europa Zona 1 (vicini, costi più bassi)
+    zona1: ["Austria", "Belgio", "Francia", "Germania", "Lussemburgo", "Paesi Bassi", "Slovenia"],
+    // Europa Zona 2 (UE centrale)
+    zona2: ["Danimarca", "Spagna", "Portogallo", "Croazia", "Repubblica Ceca", "Slovacchia", "Ungheria", "Polonia"],
+    // Europa Zona 3 (UE periferica + extra-UE europei)
+    zona3: ["Svezia", "Finlandia", "Estonia", "Lettonia", "Lituania", "Bulgaria", "Romania", "Grecia", "Irlanda", "Norvegia", "Svizzera", "Regno Unito"]
+  };
+
+  // Tariffe Europa per kg (esempio)
+  const tariffeEuropa = {
+    zona1: { base: 15, perKg: 2.5 },
+    zona2: { base: 20, perKg: 3.0 },
+    zona3: { base: 25, perKg: 3.5 }
+  };
+
+  // Zone Extra-UE (escluso USA)
+  const zoneExtraUE = {
+    zona1: ["Albania", "Bosnia-Erzegovina", "Macedonia del Nord", "Montenegro", "Serbia", "Turchia"],
+    zona2: ["Russia", "Ucraina", "Bielorussia", "Moldavia"],
+    zona3: ["Cina", "Giappone", "Corea del Sud", "India", "Thailandia", "Singapore", "Australia", "Nuova Zelanda"],
+    zona4: ["Brasile", "Argentina", "Cile", "Messico", "Canada", "Sud Africa", "Emirati Arabi Uniti", "Arabia Saudita"]
+  };
+
+  // Tariffe Extra-UE per kg
+  const tariffeExtraUE = {
+    zona1: { base: 30, perKg: 4.0 },
+    zona2: { base: 40, perKg: 5.0 },
+    zona3: { base: 50, perKg: 6.5 },
+    zona4: { base: 45, perKg: 6.0 }
+  };
+
+  // Tariffe USA (3 zone)
+  const zoneUSA = {
+    zona1: ["East Coast", "New York", "Boston", "Philadelphia", "Washington DC", "Miami", "Atlanta"],
+    zona2: ["Central", "Chicago", "Dallas", "Houston", "Minneapolis", "Detroit"],
+    zona3: ["West Coast", "Los Angeles", "San Francisco", "Seattle", "San Diego", "Las Vegas"]
+  };
+
+  const tariffeUSA = {
+    zona1: { base: 45, perKg: 7.0 },
+    zona2: { base: 50, perKg: 7.5 },
+    zona3: { base: 55, perKg: 8.0 }
+  };
 
   // ===== Mobile sidebar toggle =====
   function toggleSidebar(open) {
@@ -121,60 +177,314 @@ document.addEventListener("DOMContentLoaded", () => {
     addMsg("assistant", "✅ Chat azzerata. Puoi ripartire con un nuovo preventivo.");
   }
 
+  // ===== Helper: determinare zona spedizione =====
+
+  function getZonaItalia(cap) {
+    const prefix = cap.substring(0, 2);
+    if (zoneItaliaCAP.A.includes(prefix)) return "A";
+    if (zoneItaliaCAP.B.includes(prefix)) return "B";
+    if (zoneItaliaCAP.C.includes(prefix)) return "C";
+    return null;
+  }
+
+  function getZonaEuropa(paese) {
+    for (const [zona, paesi] of Object.entries(paesiEuropa)) {
+      if (paesi.some(p => paese.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(paese.toLowerCase()))) {
+        return zona;
+      }
+    }
+    return null;
+  }
+
+  function getZonaExtraUE(paese) {
+    for (const [zona, paesi] of Object.entries(zoneExtraUE)) {
+      if (paesi.some(p => paese.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(paese.toLowerCase()))) {
+        return zona;
+      }
+    }
+    return null;
+  }
+
+  function getZonaUSA(citta) {
+    for (const [zona, citta_list] of Object.entries(zoneUSA)) {
+      if (citta_list.some(c => citta.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(citta.toLowerCase()))) {
+        return zona;
+      }
+    }
+    return "zona2"; // default centrale
+  }
+
+  // ===== Calcolo tariffe =====
+
+  function calcolaTariffaItalia(peso, zona) {
+    // Tariffe semplificate Italia
+    const tariffe = {
+      A: { base: 8, perKg: 1.0 },
+      B: { base: 10, perKg: 1.5 },
+      C: { base: 15, perKg: 2.5 }
+    };
+    const tariffa = tariffe[zona];
+    if (!tariffa) return 0;
+    return tariffa.base + Math.max(0, peso - 1) * tariffa.perKg;
+  }
+
+  function calcolaTariffaEuropa(peso, zona) {
+    const tariffa = tariffeEuropa[zona];
+    if (!tariffa) return 0;
+    return tariffa.base + Math.max(0, peso - 1) * tariffa.perKg;
+  }
+
+  function calcolaTariffaExtraUE(peso, zona) {
+    const tariffa = tariffeExtraUE[zona];
+    if (!tariffa) return 0;
+    return tariffa.base + Math.max(0, peso - 1) * tariffa.perKg;
+  }
+
+  function calcolaTariffaUSA(peso, zona) {
+    const tariffa = tariffeUSA[zona];
+    if (!tariffa) return 0;
+    return tariffa.base + Math.max(0, peso - 1) * tariffa.perKg;
+  }
+
   // ===== Demo: form preventivo =====
-  function renderQuoteForm() {
+  function renderQuoteForm(type = "italia") {
     if (checkLock()) return;
+    currentShippingType = type;
 
     const intro = addMsg("assistant", "", { typing: true });
+
+    let formHTML = "";
+    let titleText = "";
+
+    // Genera form diverso in base al tipo di spedizione
+    switch(type) {
+      case "italia":
+        titleText = "📦 Calcolo spedizione Italia - Compila i dati:";
+        formHTML = `
+          <div class="quote-form">
+            <div class="row">
+              <input id="cap" placeholder="CAP" inputmode="text" />
+              <input id="citta" placeholder="Città" inputmode="text" />
+            </div>
+            <div class="row">
+              <input id="weight" placeholder="Peso (kg)" inputmode="decimal" />
+              <input id="len" placeholder="Lunghezza (cm)" inputmode="decimal" />
+              <input id="wid" placeholder="Larghezza (cm)" inputmode="decimal" />
+              <input id="hei" placeholder="Altezza (cm)" inputmode="decimal" />
+            </div>
+            <button id="calcBtn">Calcola preventivo Italia</button>
+          </div>`;
+        break;
+
+      case "europa":
+        titleText = "🚚 Calcolo spedizione Europa - Compila i dati:";
+        formHTML = `
+          <div class="quote-form">
+            <div class="row">
+              <input id="paese" placeholder="Paese di destinazione" inputmode="text" list="paesiEuropaList" />
+              <input id="citta" placeholder="Città" inputmode="text" />
+            </div>
+            <datalist id="paesiEuropaList">
+              ${Object.values(paesiEuropa).flat().map(p => `<option value="${p}">`).join('')}
+            </datalist>
+            <div class="row">
+              <input id="weight" placeholder="Peso (kg)" inputmode="decimal" />
+              <input id="len" placeholder="Lunghezza (cm)" inputmode="decimal" />
+              <input id="wid" placeholder="Larghezza (cm)" inputmode="decimal" />
+              <input id="hei" placeholder="Altezza (cm)" inputmode="decimal" />
+            </div>
+            <button id="calcBtn">Calcola preventivo Europa</button>
+          </div>`;
+        break;
+
+      case "extraue":
+        titleText = "✈️ Calcolo spedizione Extra-UE - Compila i dati:";
+        formHTML = `
+          <div class="quote-form">
+            <div class="row">
+              <input id="paese" placeholder="Paese di destinazione" inputmode="text" list="paesiExtraUEList" />
+              <input id="citta" placeholder="Città" inputmode="text" />
+            </div>
+            <datalist id="paesiExtraUEList">
+              ${Object.values(zoneExtraUE).flat().map(p => `<option value="${p}">`).join('')}
+            </datalist>
+            <div class="row">
+              <input id="weight" placeholder="Peso (kg)" inputmode="decimal" />
+              <input id="len" placeholder="Lunghezza (cm)" inputmode="decimal" />
+              <input id="wid" placeholder="Larghezza (cm)" inputmode="decimal" />
+              <input id="hei" placeholder="Altezza (cm)" inputmode="decimal" />
+            </div>
+            <button id="calcBtn">Calcola preventivo Extra-UE</button>
+          </div>`;
+        break;
+
+      case "usa":
+        titleText = "🇺🇸 Calcolo spedizione USA - Compila i dati:";
+        formHTML = `
+          <div class="quote-form">
+            <div class="row">
+              <input id="citta" placeholder="Città/Stato USA" inputmode="text" list="cittaUSAList" />
+              <input id="zip" placeholder="ZIP Code" inputmode="text" />
+            </div>
+            <datalist id="cittaUSAList">
+              ${Object.values(zoneUSA).flat().map(c => `<option value="${c}">`).join('')}
+            </datalist>
+            <div class="row">
+              <input id="weight" placeholder="Peso (kg)" inputmode="decimal" />
+              <input id="len" placeholder="Lunghezza (cm)" inputmode="decimal" />
+              <input id="wid" placeholder="Larghezza (cm)" inputmode="decimal" />
+              <input id="hei" placeholder="Altezza (cm)" inputmode="decimal" />
+            </div>
+            <button id="calcBtn">Calcola preventivo USA</button>
+          </div>`;
+        break;
+    }
+
     setTimeout(() => {
-      replaceTyping(
-        intro,
-        `Ok! Compila i dati per il calcolo:<br>
-         <div class="quote-form">
-           <div class="row">
-             <input id="cap" placeholder="CAP" inputmode="text" />
-             <input id="citta" placeholder="Città" inputmode="text" />
-           </div>
-           <div class="row">
-             <input id="weight" placeholder="Peso (kg)" inputmode="decimal" />
-             <input id="len" placeholder="Lunghezza (cm)" inputmode="decimal" />
-             <input id="wid" placeholder="Larghezza (cm)" inputmode="decimal" />
-             <input id="hei" placeholder="Altezza (cm)" inputmode="decimal" />
-           </div>
-           <button id="calcBtn">Calcola</button>
-         </div>`
-      );
+      replaceTyping(intro, `${titleText}<br>${formHTML}`);
 
       const calcBtn = $("#calcBtn");
       if (calcBtn) {
-        calcBtn.addEventListener("click", () => {
-          const cap = $("#cap")?.value?.trim() || "";
-          const citta = $("#citta")?.value?.trim() || "";
-          const w = parseFloat($("#weight")?.value?.replace(",", ".") || "0") || 0;
-          const L = parseFloat($("#len")?.value?.replace(",", ".") || "0") || 0;
-          const W = parseFloat($("#wid")?.value?.replace(",", ".") || "0") || 0;
-          const H = parseFloat($("#hei")?.value?.replace(",", ".") || "0") || 0;
-
-          const vol = (L * W * H) / 5000; // divisore demo
-          const kg = Math.max(w, vol);
-          const price = 10 + Math.max(0, kg - 1) * 1.2;
-
-          addMsg(
-            "assistant",
-            `Preventivo:<br>
-             • CAP: ${cap}<br>
-             • Città: ${citta}<br>
-             • Peso reale: ${w.toFixed(2)} kg<br>
-             • Peso volumetrico: ${vol.toFixed(2)} kg<br>
-             • Peso tassabile: ${kg.toFixed(2)} kg<br>
-             ➡️ Totale stimato: € ${price.toFixed(2)}`
-          );
-
-          // ✅ Blocca SOLO dopo il calcolo
-          setLocked(true);
-        });
+        calcBtn.addEventListener("click", () => handleCalculation(type));
       }
     }, 300);
+  }
+
+  // ===== Gestione calcolo in base al tipo =====
+  function handleCalculation(type) {
+    const w = parseFloat($("#weight")?.value?.replace(",", ".") || "0") || 0;
+    const L = parseFloat($("#len")?.value?.replace(",", ".") || "0") || 0;
+    const W = parseFloat($("#wid")?.value?.replace(",", ".") || "0") || 0;
+    const H = parseFloat($("#hei")?.value?.replace(",", ".") || "0") || 0;
+
+    if (w <= 0) {
+      addMsg("assistant", "⚠️ Inserisci un peso valido!");
+      return;
+    }
+
+    const vol = (L * W * H) / 5000; // peso volumetrico
+    const kg = Math.max(w, vol);
+
+    let risultato = "";
+
+    switch(type) {
+      case "italia": {
+        const cap = $("#cap")?.value?.trim() || "";
+        const citta = $("#citta")?.value?.trim() || "";
+
+        if (!cap) {
+          addMsg("assistant", "⚠️ Inserisci un CAP valido!");
+          return;
+        }
+
+        const zona = getZonaItalia(cap);
+        if (!zona) {
+          addMsg("assistant", "⚠️ CAP non riconosciuto!");
+          return;
+        }
+
+        const price = calcolaTariffaItalia(kg, zona);
+        risultato = `
+          <strong>📦 Preventivo Italia</strong><br>
+          • Destinazione: ${citta} (${cap})<br>
+          • Zona: <strong>${zona}</strong><br>
+          • Peso reale: ${w.toFixed(2)} kg<br>
+          • Peso volumetrico: ${vol.toFixed(2)} kg<br>
+          • Peso tassabile: <strong>${kg.toFixed(2)} kg</strong><br>
+          <br>
+          ➡️ <strong>Totale: € ${price.toFixed(2)}</strong>
+        `;
+        break;
+      }
+
+      case "europa": {
+        const paese = $("#paese")?.value?.trim() || "";
+        const citta = $("#citta")?.value?.trim() || "";
+
+        if (!paese) {
+          addMsg("assistant", "⚠️ Inserisci un paese valido!");
+          return;
+        }
+
+        const zona = getZonaEuropa(paese);
+        if (!zona) {
+          addMsg("assistant", `⚠️ Paese "${paese}" non trovato nell'elenco Europa!`);
+          return;
+        }
+
+        const price = calcolaTariffaEuropa(kg, zona);
+        const zonaNum = zona.replace("zona", "");
+        risultato = `
+          <strong>🚚 Preventivo Europa</strong><br>
+          • Destinazione: ${citta}, ${paese}<br>
+          • Zona Europa: <strong>${zonaNum}</strong><br>
+          • Peso reale: ${w.toFixed(2)} kg<br>
+          • Peso volumetrico: ${vol.toFixed(2)} kg<br>
+          • Peso tassabile: <strong>${kg.toFixed(2)} kg</strong><br>
+          <br>
+          ➡️ <strong>Totale: € ${price.toFixed(2)}</strong>
+        `;
+        break;
+      }
+
+      case "extraue": {
+        const paese = $("#paese")?.value?.trim() || "";
+        const citta = $("#citta")?.value?.trim() || "";
+
+        if (!paese) {
+          addMsg("assistant", "⚠️ Inserisci un paese valido!");
+          return;
+        }
+
+        const zona = getZonaExtraUE(paese);
+        if (!zona) {
+          addMsg("assistant", `⚠️ Paese "${paese}" non trovato nell'elenco Extra-UE!`);
+          return;
+        }
+
+        const price = calcolaTariffaExtraUE(kg, zona);
+        const zonaNum = zona.replace("zona", "");
+        risultato = `
+          <strong>✈️ Preventivo Extra-UE</strong><br>
+          • Destinazione: ${citta}, ${paese}<br>
+          • Zona Extra-UE: <strong>${zonaNum}</strong><br>
+          • Peso reale: ${w.toFixed(2)} kg<br>
+          • Peso volumetrico: ${vol.toFixed(2)} kg<br>
+          • Peso tassabile: <strong>${kg.toFixed(2)} kg</strong><br>
+          <br>
+          ➡️ <strong>Totale: € ${price.toFixed(2)}</strong>
+        `;
+        break;
+      }
+
+      case "usa": {
+        const citta = $("#citta")?.value?.trim() || "";
+        const zip = $("#zip")?.value?.trim() || "";
+
+        if (!citta) {
+          addMsg("assistant", "⚠️ Inserisci una città valida!");
+          return;
+        }
+
+        const zona = getZonaUSA(citta);
+        const price = calcolaTariffaUSA(kg, zona);
+        const zonaNum = zona.replace("zona", "");
+        risultato = `
+          <strong>🇺🇸 Preventivo USA</strong><br>
+          • Destinazione: ${citta}${zip ? ` (${zip})` : ''}<br>
+          • Zona USA: <strong>${zonaNum}</strong><br>
+          • Peso reale: ${w.toFixed(2)} kg<br>
+          • Peso volumetrico: ${vol.toFixed(2)} kg<br>
+          • Peso tassabile: <strong>${kg.toFixed(2)} kg</strong><br>
+          <br>
+          ➡️ <strong>Totale: € ${price.toFixed(2)}</strong>
+        `;
+        break;
+      }
+    }
+
+    addMsg("assistant", risultato);
+    setLocked(true);
   }
 
   // ===== Prompt send =====
@@ -206,11 +516,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Sidebar → apre il form preventivo
+  // Sidebar → apre il form preventivo in base al tipo selezionato
   sideButtons.forEach((b) => {
     b.addEventListener("click", () => {
+      const targetType = b.getAttribute("data-target");
       toggleSidebar(false);
-      renderQuoteForm();
+      renderQuoteForm(targetType);
     });
   });
 
