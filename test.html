@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test MarterNeri</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 280px;
+      background: #121212;
+      border-right: 1px solid #333;
+      padding: 20px;
+    }
+    .logo {
+      width: 70px;
+      height: 70px;
+      background: #333;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    .brand {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #00ff99;
+    }
+    button {
+      width: 100%;
+      background: #181818;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #252525;
+      border-color: #00ff99;
+      color: #00ff99;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+      background: #0a0a0a;
+    }
+    .chat {
+      background: #0f0f0f;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 20px;
+      height: calc(100vh - 140px);
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .composer {
+      background: #0f0f0f;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      resize: none;
+      outline: none;
+    }
+    .send-btn {
+      background: #00ff99;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo"></div>
+    <div class="brand">MarterNeri</div>
+    <button onclick="alert('Italia funziona!')">🇮🇹 Italia</button>
+    <button onclick="alert('Europa funziona!')">🇪🇺 Europa</button>
+    <button onclick="alert('Extra-UE funziona!')">🌍 Extra-UE</button>
+    <button onclick="alert('USA funziona!')">🇺🇸 USA</button>
+  </div>
+
+  <div class="main">
+    <div class="chat">
+      <p style="color: #00ff99; font-size: 18px;">✅ Se vedi questo messaggio, la pagina funziona!</p>
+      <p style="margin-top: 10px;">Clicca uno dei pulsanti nella barra laterale per testare.</p>
+    </div>
+    <div class="composer">
+      <textarea placeholder="Scrivi qualcosa..."></textarea>
+      <button class="send-btn">Invia</button>
+    </div>
+  </div>
+</body>
+</html>
