@@ -424,7 +424,19 @@ document.addEventListener("DOMContentLoaded", () => {
       if (chat) chat.innerHTML = "";
       setLocked(false);
 
-      renderQuoteForm(targetType);
+      // Mappa i data-target ai tipi gestiti dal sistema
+      let formType = "italia";
+      if (targetType === "toscana" || targetType === "italia-a" || targetType === "italia-b") {
+        formType = "italia";
+      } else if (targetType === "zona1") {
+        formType = "europa";
+      } else if (targetType === "zona2" || targetType === "zona3" || targetType === "zona4") {
+        formType = "extraue";
+      } else if (targetType === "zona5") {
+        formType = "usa";
+      }
+
+      renderQuoteForm(formType);
     });
   });
 
