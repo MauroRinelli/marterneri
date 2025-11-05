@@ -124,15 +124,21 @@ html, body {
 
 /* === Zone selection buttons === */
 .zone-select-btn{
-  width:100%; background:#181818; border:1px solid var(--stroke); color:var(--text);
+  width:100%; background:#0a0a0a; border:1px solid #2a2a2a; color:#ffffff;
   text-align:left; padding:14px 16px; border-radius:10px; margin-bottom:10px;
-  cursor:pointer; transition:.2s ease; display:flex; align-items:center; gap:14px;
+  cursor:pointer; transition:.25s ease; display:flex; align-items:center; gap:14px;
 }
-.zone-select-btn:hover{ border-color:var(--accent); background:#1f1f1f; }
-.zone-select-btn .zone-icon{ font-size:28px; line-height:1; }
+.zone-select-btn:hover{
+  background:#ffffff;
+  border-color:#ffffff;
+  color:#000000;
+}
+.zone-select-btn:hover .zone-icon{ opacity:1; }
+.zone-select-btn .zone-icon{ font-size:28px; line-height:1; opacity:0.9; transition:.25s ease; }
 .zone-select-btn .zone-info{ display:flex; flex-direction:column; gap:4px; }
-.zone-select-btn .zone-info strong{ font-size:16px; color:var(--text); }
-.zone-select-btn .zone-info small{ font-size:12px; color:var(--muted); }
+.zone-select-btn .zone-info strong{ font-size:16px; color:inherit; transition:.25s ease; }
+.zone-select-btn .zone-info small{ font-size:12px; color:#a0a0a0; transition:.25s ease; }
+.zone-select-btn:hover .zone-info small{ color:#555555; }
 
 /* ====== Responsive ====== */
 @media (max-width: 880px){
