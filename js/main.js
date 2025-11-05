@@ -143,7 +143,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // Genera form diverso in base al tipo di spedizione
     switch(type) {
       case "italia":
-        titleText = "📦 Calcolo spedizione Italia - Compila i dati:";
+        // Menu di selezione zona Italia
+        titleText = "🇮🇹 Seleziona la zona Italia:";
+        formHTML = `
+          <div class="quote-form">
+            <button class="zone-select-btn" data-zone="italia-toscana">
+              <span class="zone-icon">🏛️</span>
+              <span class="zone-info">
+                <strong>Toscana</strong>
+                <small>CAP 50-59 • Tariffe dedicate</small>
+              </span>
+            </button>
+            <button class="zone-select-btn" data-zone="italia-a">
+              <span class="zone-icon">🇮🇹</span>
+              <span class="zone-info">
+                <strong>Italia A</strong>
+                <small>Italia continentale (escluse Toscana e isole)</small>
+              </span>
+            </button>
+            <button class="zone-select-btn" data-zone="italia-b">
+              <span class="zone-icon">🏝️</span>
+              <span class="zone-info">
+                <strong>Italia B</strong>
+                <small>Calabria, Sicilia, Sardegna</small>
+              </span>
+            </button>
+          </div>`;
+        break;
+
+      case "italia-toscana":
+      case "italia-a":
+      case "italia-b":
+        const zoneName = type === "italia-toscana" ? "Toscana" : (type === "italia-a" ? "Italia A" : "Italia B");
+        titleText = `📦 Calcolo spedizione ${zoneName} - Compila i dati:`;
         formHTML = `
           <div class="quote-form">
             <div class="row">
@@ -159,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <input id="wid" placeholder="Larghezza (cm)" inputmode="decimal" />
               <input id="hei" placeholder="Altezza (cm)" inputmode="decimal" />
             </div>
-            <button id="calcBtn">Calcola preventivo Italia</button>
+            <button id="calcBtn">Calcola preventivo ${zoneName}</button>
           </div>`;
         break;
 
@@ -239,9 +271,24 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       replaceTyping(intro, `${titleText}<br>${formHTML}`);
 
-      const calcBtn = $("#calcBtn");
-      if (calcBtn) {
-        calcBtn.addEventListener("click", () => handleCalculation(type));
+      // Se è il menu Italia, aggiungi listener ai pulsanti di selezione zona
+      if (type === "italia") {
+        const zoneButtons = $$(".zone-select-btn");
+        zoneButtons.forEach(btn => {
+          btn.addEventListener("click", () => {
+            const selectedZone = btn.getAttribute("data-zone");
+            // Reset della chat e mostra il form della zona selezionata
+            if (chat) chat.innerHTML = "";
+            setLocked(false);
+            renderQuoteForm(selectedZone);
+          });
+        });
+      } else {
+        // Per tutti gli altri tipi, gestisci il calcolo
+        const calcBtn = $("#calcBtn");
+        if (calcBtn) {
+          calcBtn.addEventListener("click", () => handleCalculation(type));
+        }
       }
     }, 300);
   }
@@ -264,7 +311,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let risultato = "";
 
     switch(type) {
-      case "italia": {
+      case "italia-toscana":
+      case "italia-a":
+      case "italia-b": {
         const cap = $("#cap")?.value?.trim() || "";
         const citta = $("#citta")?.value?.trim() || "";
 
@@ -280,10 +329,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const price = calcolaPrezzoItalia(kg, zona);
+        const zoneName = type === "italia-toscana" ? "Toscana" : (type === "italia-a" ? "Italia A" : "Italia B");
         risultato = `
-          <strong>📦 Preventivo Italia</strong><br>
+          <strong>📦 Preventivo ${zoneName}</strong><br>
           • Destinazione: ${citta} (${cap})<br>
-          • Zona: <strong>${zona}</strong><br>
+          • Zona rilevata: <strong>${zona}</strong><br>
           • Peso reale: ${w.toFixed(2)} kg<br>
           • Peso volumetrico: ${vol.toFixed(2)} kg<br>
           • Peso tassabile: <strong>${kg.toFixed(2)} kg</strong><br>
