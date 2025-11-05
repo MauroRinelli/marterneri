@@ -1,222 +1,215 @@
 /**
- * LISTINI TARIFFE SPEDIZIONI
+ * LISTINI TARIFFE SPEDIZIONI - MarterNeri/SoleBot
  *
- * Struttura professionale per la gestione dei prezzi di spedizione.
- * Facilmente modificabile e aggiornabile.
+ * Struttura aggiornata con 8 zone tariffarie:
+ * - 🇮🇹 Toscana (regionale)
+ * - 🇮🇹 Italia A (continentale escl. Toscana e isole)
+ * - 🇮🇹 Italia B (Calabria, Sicilia, Sardegna)
+ * - 🇪🇺 Zona 1 (Europa vicina)
+ * - 🌍 Zona 2 (Balcani & Est Europa)
+ * - 🌐 Zona 3 (Medio Oriente, Africa, Asia, Oceania)
+ * - 🌎 Zona 4 (Americhe senza USA)
+ * - 🇺🇸 Zona 5 (USA)
  *
- * IMPORTANTE: Questi sono dati di esempio realistici.
- * Aggiorna i prezzi in base ai tuoi listini effettivi.
+ * Ultimo aggiornamento: Novembre 2025
  */
 
 // ============================================================================
-// ITALIA - Zone A, B, C (basate su CAP)
+// 🇮🇹 ITALIA - TOSCANA, ZONA A, ZONA B
 // ============================================================================
 
 const zoneItaliaCAP = {
-  A: ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "50", "51", "52", "53", "54", "55", "56", "57", "59"],
-  B: ["58", "60", "61", "62", "63", "64", "65", "66", "67", "70", "71", "72", "73", "74", "75", "76", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89"],
-  C: ["90", "91", "92", "93", "94", "95", "96", "97", "98"]
+  // Toscana: CAP 50-59
+  Toscana: ["50", "51", "52", "53", "54", "55", "56", "57", "58", "59"],
+
+  // Zona B: Sardegna (07-09) + Calabria (87-89) + Sicilia (90-98)
+  B: ["07", "08", "09", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98"],
+
+  // Zona A: Resto Italia continentale (escluse Toscana e Zona B)
+  A: ["00", "01", "02", "03", "04", "05", "06", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+      "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36",
+      "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "60", "61", "62", "63",
+      "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
+      "81", "82", "83", "84", "85", "86"]
 };
 
 // Tariffe Italia per scaglioni di peso (in kg)
 const tariffeItalia = {
+  Toscana: [
+    { pesoMax: 1, prezzo: 5.00 },
+    { pesoMax: 3, prezzo: 5.00 },
+    { pesoMax: 5, prezzo: 5.00 },
+    { pesoMax: 10, prezzo: 5.00 },
+    { pesoMax: 15, prezzo: 8.00 },
+    { pesoMax: 20, prezzo: 8.00 },
+    { pesoMax: 30, prezzo: 12.00 },
+    { pesoMax: 50, prezzo: 20.00 },
+    { pesoMax: Infinity, prezzoPerKg: 1.00 } // oltre 50kg: €1,00/kg
+  ],
   A: [
-    { pesoMax: 1, prezzo: 6.50 },
-    { pesoMax: 3, prezzo: 8.00 },
-    { pesoMax: 5, prezzo: 9.50 },
-    { pesoMax: 10, prezzo: 12.00 },
-    { pesoMax: 15, prezzo: 15.50 },
-    { pesoMax: 20, prezzo: 18.00 },
-    { pesoMax: 30, prezzo: 24.00 },
-    { pesoMax: 50, prezzo: 35.00 },
-    { pesoMax: 70, prezzo: 48.00 },
-    { pesoMax: Infinity, prezzo: 65.00 } // oltre 70kg
+    { pesoMax: 1, prezzo: 6.25 },
+    { pesoMax: 3, prezzo: 6.25 },
+    { pesoMax: 5, prezzo: 6.25 },
+    { pesoMax: 10, prezzo: 6.25 },
+    { pesoMax: 15, prezzo: 10.00 },
+    { pesoMax: 20, prezzo: 10.00 },
+    { pesoMax: 30, prezzo: 15.00 },
+    { pesoMax: 50, prezzo: 25.00 },
+    { pesoMax: Infinity, prezzoPerKg: 1.25 } // oltre 50kg: €1,25/kg
   ],
   B: [
-    { pesoMax: 1, prezzo: 7.50 },
-    { pesoMax: 3, prezzo: 9.50 },
-    { pesoMax: 5, prezzo: 11.50 },
-    { pesoMax: 10, prezzo: 15.00 },
-    { pesoMax: 15, prezzo: 19.50 },
-    { pesoMax: 20, prezzo: 23.00 },
-    { pesoMax: 30, prezzo: 30.00 },
-    { pesoMax: 50, prezzo: 45.00 },
-    { pesoMax: 70, prezzo: 60.00 },
-    { pesoMax: Infinity, prezzo: 80.00 }
-  ],
-  C: [
-    { pesoMax: 1, prezzo: 9.00 },
-    { pesoMax: 3, prezzo: 12.00 },
-    { pesoMax: 5, prezzo: 15.00 },
-    { pesoMax: 10, prezzo: 20.00 },
-    { pesoMax: 15, prezzo: 26.00 },
-    { pesoMax: 20, prezzo: 32.00 },
-    { pesoMax: 30, prezzo: 42.00 },
-    { pesoMax: 50, prezzo: 60.00 },
-    { pesoMax: 70, prezzo: 80.00 },
-    { pesoMax: Infinity, prezzo: 110.00 }
+    { pesoMax: 1, prezzo: 6.88 },
+    { pesoMax: 3, prezzo: 9.00 },
+    { pesoMax: 5, prezzo: 9.00 },
+    { pesoMax: 10, prezzo: 6.88 },
+    { pesoMax: 15, prezzo: 11.00 },
+    { pesoMax: 20, prezzo: 11.00 },
+    { pesoMax: 30, prezzo: 16.50 },
+    { pesoMax: 50, prezzo: 27.50 },
+    { pesoMax: Infinity, prezzoPerKg: 1.38 } // oltre 50kg: €1,38/kg
   ]
 };
 
 // ============================================================================
-// EUROPA - Zone 1, 2, 3
+// 🇪🇺 ZONA 1 - EUROPA VICINA (EU)
 // ============================================================================
 
-const paesiEuropa = {
-  zona1: ["Austria", "Belgio", "Francia", "Germania", "Lussemburgo", "Paesi Bassi", "Slovenia"],
-  zona2: ["Danimarca", "Spagna", "Portogallo", "Croazia", "Repubblica Ceca", "Slovacchia", "Ungheria", "Polonia"],
-  zona3: ["Svezia", "Finlandia", "Estonia", "Lettonia", "Lituania", "Bulgaria", "Romania", "Grecia", "Irlanda", "Norvegia", "Svizzera", "Regno Unito"]
-};
+const paesiZona1 = [
+  "Austria", "Belgio", "Croazia", "Francia", "Germania", "Grecia", "Irlanda",
+  "Lussemburgo", "Paesi Bassi", "Olanda", "Polonia", "Portogallo",
+  "Repubblica Ceca", "Rep. Ceca", "Cechia", "Romania", "Slovacchia",
+  "Slovenia", "Spagna", "Ungheria"
+];
 
-const tariffeEuropa = {
-  zona1: [
-    { pesoMax: 1, prezzo: 14.00 },
-    { pesoMax: 3, prezzo: 18.00 },
-    { pesoMax: 5, prezzo: 22.00 },
-    { pesoMax: 10, prezzo: 32.00 },
-    { pesoMax: 15, prezzo: 42.00 },
-    { pesoMax: 20, prezzo: 52.00 },
-    { pesoMax: 30, prezzo: 72.00 },
-    { pesoMax: 50, prezzo: 110.00 },
-    { pesoMax: 70, prezzo: 145.00 },
-    { pesoMax: Infinity, prezzo: 190.00 }
-  ],
-  zona2: [
-    { pesoMax: 1, prezzo: 16.00 },
-    { pesoMax: 3, prezzo: 21.00 },
-    { pesoMax: 5, prezzo: 26.00 },
-    { pesoMax: 10, prezzo: 38.00 },
-    { pesoMax: 15, prezzo: 50.00 },
-    { pesoMax: 20, prezzo: 62.00 },
-    { pesoMax: 30, prezzo: 85.00 },
-    { pesoMax: 50, prezzo: 130.00 },
-    { pesoMax: 70, prezzo: 170.00 },
-    { pesoMax: Infinity, prezzo: 220.00 }
-  ],
-  zona3: [
-    { pesoMax: 1, prezzo: 18.00 },
-    { pesoMax: 3, prezzo: 24.00 },
-    { pesoMax: 5, prezzo: 30.00 },
-    { pesoMax: 10, prezzo: 45.00 },
-    { pesoMax: 15, prezzo: 58.00 },
-    { pesoMax: 20, prezzo: 72.00 },
-    { pesoMax: 30, prezzo: 98.00 },
-    { pesoMax: 50, prezzo: 150.00 },
-    { pesoMax: 70, prezzo: 195.00 },
-    { pesoMax: Infinity, prezzo: 250.00 }
-  ]
-};
+const tariffeZona1 = [
+  { pesoMax: 1, prezzo: 9.60 },
+  { pesoMax: 3, prezzo: 17.60 },
+  { pesoMax: 5, prezzo: 24.00 },
+  { pesoMax: 10, prezzo: 33.60 },
+  { pesoMax: 15, prezzo: 43.20 },
+  { pesoMax: 20, prezzo: 52.80 },
+  { pesoMax: 30, prezzo: 72.00 },
+  { pesoMax: 50, prezzo: 110.00 },
+  { pesoMax: Infinity, prezzoPerKg: 1.38 } // oltre 50kg: €1,38/kg
+];
 
 // ============================================================================
-// EXTRA-UE - Zone 1, 2, 3, 4
+// 🌍 ZONA 2 - BALCANI & EST EUROPA
 // ============================================================================
 
-const zoneExtraUE = {
-  zona1: ["Albania", "Bosnia-Erzegovina", "Macedonia del Nord", "Montenegro", "Serbia", "Turchia"],
-  zona2: ["Russia", "Ucraina", "Bielorussia", "Moldavia"],
-  zona3: ["Cina", "Giappone", "Corea del Sud", "India", "Thailandia", "Singapore", "Australia", "Nuova Zelanda"],
-  zona4: ["Brasile", "Argentina", "Cile", "Messico", "Canada", "Sud Africa", "Emirati Arabi Uniti", "Arabia Saudita"]
-};
+const paesiZona2 = [
+  "Albania", "Armenia", "Azerbaijan", "Azerbaigian", "Bielorussia", "Bielorrussia",
+  "Bosnia-Erzegovina", "Bosnia", "Erzegovina", "Bulgaria", "Georgia",
+  "Kazakhstan", "Kazakistan", "Macedonia", "Macedonia del Nord", "Moldavia",
+  "Montenegro", "Russia", "Serbia", "Turchia", "Ucraina"
+];
 
-const tariffeExtraUE = {
-  zona1: [
-    { pesoMax: 1, prezzo: 22.00 },
-    { pesoMax: 3, prezzo: 30.00 },
-    { pesoMax: 5, prezzo: 38.00 },
-    { pesoMax: 10, prezzo: 55.00 },
-    { pesoMax: 15, prezzo: 72.00 },
-    { pesoMax: 20, prezzo: 88.00 },
-    { pesoMax: 30, prezzo: 120.00 },
-    { pesoMax: 50, prezzo: 180.00 },
-    { pesoMax: 70, prezzo: 240.00 },
-    { pesoMax: Infinity, prezzo: 310.00 }
-  ],
-  zona2: [
-    { pesoMax: 1, prezzo: 28.00 },
-    { pesoMax: 3, prezzo: 38.00 },
-    { pesoMax: 5, prezzo: 48.00 },
-    { pesoMax: 10, prezzo: 70.00 },
-    { pesoMax: 15, prezzo: 92.00 },
-    { pesoMax: 20, prezzo: 112.00 },
-    { pesoMax: 30, prezzo: 155.00 },
-    { pesoMax: 50, prezzo: 230.00 },
-    { pesoMax: 70, prezzo: 305.00 },
-    { pesoMax: Infinity, prezzo: 395.00 }
-  ],
-  zona3: [
-    { pesoMax: 1, prezzo: 35.00 },
-    { pesoMax: 3, prezzo: 48.00 },
-    { pesoMax: 5, prezzo: 62.00 },
-    { pesoMax: 10, prezzo: 92.00 },
-    { pesoMax: 15, prezzo: 122.00 },
-    { pesoMax: 20, prezzo: 150.00 },
-    { pesoMax: 30, prezzo: 205.00 },
-    { pesoMax: 50, prezzo: 310.00 },
-    { pesoMax: 70, prezzo: 410.00 },
-    { pesoMax: Infinity, prezzo: 530.00 }
-  ],
-  zona4: [
-    { pesoMax: 1, prezzo: 32.00 },
-    { pesoMax: 3, prezzo: 44.00 },
-    { pesoMax: 5, prezzo: 56.00 },
-    { pesoMax: 10, prezzo: 82.00 },
-    { pesoMax: 15, prezzo: 108.00 },
-    { pesoMax: 20, prezzo: 132.00 },
-    { pesoMax: 30, prezzo: 180.00 },
-    { pesoMax: 50, prezzo: 270.00 },
-    { pesoMax: 70, prezzo: 360.00 },
-    { pesoMax: Infinity, prezzo: 465.00 }
-  ]
-};
+const tariffeZona2 = [
+  { pesoMax: 1, prezzo: 14.95 },
+  { pesoMax: 3, prezzo: 34.50 },
+  { pesoMax: 5, prezzo: 37.95 },
+  { pesoMax: 10, prezzo: 65.55 },
+  { pesoMax: 15, prezzo: 84.53 },
+  { pesoMax: 20, prezzo: 103.50 },
+  { pesoMax: 30, prezzo: 130.00 },
+  { pesoMax: 50, prezzo: 170.00 },
+  { pesoMax: Infinity, prezzoPerKg: 1.38 } // oltre 50kg: €1,38/kg
+];
 
 // ============================================================================
-// USA - Zone 1, 2, 3
+// 🌐 ZONA 3 - MEDIO ORIENTE, AFRICA, ASIA, OCEANIA
 // ============================================================================
 
-const zoneUSA = {
-  zona1: ["East Coast", "New York", "Boston", "Philadelphia", "Washington DC", "Miami", "Atlanta"],
-  zona2: ["Central", "Chicago", "Dallas", "Houston", "Minneapolis", "Detroit"],
-  zona3: ["West Coast", "Los Angeles", "San Francisco", "Seattle", "San Diego", "Las Vegas"]
-};
+const paesiZona3 = [
+  // Asia
+  "Cina", "India", "Giappone", "Corea del Sud", "Corea", "Thailandia", "Malesia",
+  "Vietnam", "Filippine", "Indonesia", "Singapore", "Hong Kong", "Taiwan",
+  "Pakistan", "Bangladesh",
+  // Oceania
+  "Australia", "Nuova Zelanda",
+  // Medio Oriente
+  "Emirati Arabi Uniti", "Emirati", "UAE", "Arabia Saudita", "Qatar", "Kuwait",
+  "Israele",
+  // Africa
+  "Sud Africa", "Sudafrica", "Egitto", "Marocco", "Tunisia", "Kenya", "Nigeria"
+];
 
-const tariffeUSA = {
-  zona1: [
-    { pesoMax: 1, prezzo: 38.00 },
-    { pesoMax: 3, prezzo: 52.00 },
-    { pesoMax: 5, prezzo: 68.00 },
-    { pesoMax: 10, prezzo: 98.00 },
-    { pesoMax: 15, prezzo: 128.00 },
-    { pesoMax: 20, prezzo: 158.00 },
-    { pesoMax: 30, prezzo: 215.00 },
-    { pesoMax: 50, prezzo: 325.00 },
-    { pesoMax: 70, prezzo: 430.00 },
-    { pesoMax: Infinity, prezzo: 555.00 }
-  ],
-  zona2: [
-    { pesoMax: 1, prezzo: 42.00 },
-    { pesoMax: 3, prezzo: 58.00 },
-    { pesoMax: 5, prezzo: 75.00 },
-    { pesoMax: 10, prezzo: 108.00 },
-    { pesoMax: 15, prezzo: 142.00 },
-    { pesoMax: 20, prezzo: 175.00 },
-    { pesoMax: 30, prezzo: 238.00 },
-    { pesoMax: 50, prezzo: 360.00 },
-    { pesoMax: 70, prezzo: 475.00 },
-    { pesoMax: Infinity, prezzo: 615.00 }
-  ],
-  zona3: [
-    { pesoMax: 1, prezzo: 45.00 },
-    { pesoMax: 3, prezzo: 62.00 },
-    { pesoMax: 5, prezzo: 80.00 },
-    { pesoMax: 10, prezzo: 115.00 },
-    { pesoMax: 15, prezzo: 152.00 },
-    { pesoMax: 20, prezzo: 188.00 },
-    { pesoMax: 30, prezzo: 255.00 },
-    { pesoMax: 50, prezzo: 385.00 },
-    { pesoMax: 70, prezzo: 510.00 },
-    { pesoMax: Infinity, prezzo: 660.00 }
-  ]
-};
+const tariffeZona3 = [
+  { pesoMax: 1, prezzo: 12.64 },
+  { pesoMax: 3, prezzo: 18.96 },
+  { pesoMax: 5, prezzo: 24.49 },
+  { pesoMax: 10, prezzo: 36.34 },
+  { pesoMax: 15, prezzo: 46.61 },
+  { pesoMax: 20, prezzo: 57.20 },
+  { pesoMax: 30, prezzo: 72.00 },
+  { pesoMax: 50, prezzo: 110.00 },
+  { pesoMax: Infinity, prezzoPerKg: 1.38 } // oltre 50kg: €1,38/kg
+];
+
+// ============================================================================
+// 🌎 ZONA 4 - AMERICHE (SENZA USA)
+// ============================================================================
+
+const paesiZona4 = [
+  "Argentina", "Brasile", "Canada", "Cile", "Colombia", "Messico",
+  "Panama", "Perù", "Peru", "Uruguay", "Venezuela", "Ecuador",
+  "Bolivia", "Paraguay", "Costa Rica", "Guatemala", "Honduras",
+  "Nicaragua", "El Salvador", "Cuba", "Rep. Dominicana", "Giamaica"
+];
+
+const tariffeZona4 = [
+  { pesoMax: 1, prezzo: 25.60 },
+  { pesoMax: 3, prezzo: 32.00 },
+  { pesoMax: 5, prezzo: 38.40 },
+  { pesoMax: 10, prezzo: 60.80 },
+  { pesoMax: 15, prezzo: 85.60 },
+  { pesoMax: 20, prezzo: 107.20 },
+  { pesoMax: 30, prezzo: 150.00 },
+  { pesoMax: 50, prezzo: 210.00 },
+  { pesoMax: Infinity, prezzoPerKg: 1.38 } // oltre 50kg: €1,38/kg
+];
+
+// ============================================================================
+// 🇺🇸 ZONA 5 - USA (STATI UNITI)
+// ============================================================================
+
+const paesiZona5 = [
+  "USA", "Stati Uniti", "United States", "America", "US"
+];
+
+// Include anche città/stati principali per riconoscimento
+const cittaUSA = [
+  "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia",
+  "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville",
+  "Fort Worth", "Columbus", "Charlotte", "San Francisco", "Indianapolis",
+  "Seattle", "Denver", "Washington", "Boston", "Nashville", "Detroit",
+  "Portland", "Las Vegas", "Memphis", "Louisville", "Baltimore", "Milwaukee",
+  "Albuquerque", "Tucson", "Fresno", "Mesa", "Sacramento", "Atlanta", "Kansas",
+  "Colorado", "Miami", "Raleigh", "Omaha", "Long Beach", "Virginia Beach",
+  "Oakland", "Minneapolis", "Tampa", "Tulsa", "Arlington", "New Orleans",
+  // Stati USA
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Carolina",
+  "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii",
+  "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+  "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+  "Wisconsin", "Wyoming"
+];
+
+const tariffeZona5 = [
+  { pesoMax: 1, prezzo: 27.55 },
+  { pesoMax: 3, prezzo: 43.50 },
+  { pesoMax: 5, prezzo: 59.31 },
+  { pesoMax: 10, prezzo: 90.92 },
+  { pesoMax: 15, prezzo: 119.77 },
+  { pesoMax: 20, prezzo: 142.97 },
+  { pesoMax: 30, prezzo: 190.00 },
+  { pesoMax: 50, prezzo: 250.00 },
+  { pesoMax: Infinity, prezzoPerKg: 1.38 } // oltre 50kg: €1,38/kg
+];
 
 // ============================================================================
 // FUNZIONI DI UTILITÀ
@@ -225,78 +218,83 @@ const tariffeUSA = {
 /**
  * Trova il prezzo in base al peso tassabile e alla tabella tariffe
  * @param {number} peso - Peso tassabile in kg
- * @param {Array} tabellaTariffe - Array di scaglioni {pesoMax, prezzo}
+ * @param {Array} tabellaTariffe - Array di scaglioni {pesoMax, prezzo} o {pesoMax, prezzoPerKg}
  * @returns {number} - Prezzo della spedizione
  */
 function trovaPrezzoPerPeso(peso, tabellaTariffe) {
   for (let scaglione of tabellaTariffe) {
     if (peso <= scaglione.pesoMax) {
+      // Se esiste prezzoPerKg, calcola il prezzo in base al peso
+      if (scaglione.prezzoPerKg) {
+        return peso * scaglione.prezzoPerKg;
+      }
       return scaglione.prezzo;
     }
   }
   // Fallback: ultimo prezzo della tabella
-  return tabellaTariffe[tabellaTariffe.length - 1].prezzo;
+  const ultimoScaglione = tabellaTariffe[tabellaTariffe.length - 1];
+  if (ultimoScaglione.prezzoPerKg) {
+    return peso * ultimoScaglione.prezzoPerKg;
+  }
+  return ultimoScaglione.prezzo;
 }
 
 /**
  * Determina la zona Italia in base al CAP
  * @param {string} cap - Codice di Avviamento Postale
- * @returns {string|null} - Zona (A, B, C) o null se non trovato
+ * @returns {string|null} - Zona (Toscana, A, B) o null se non trovato
  */
 function getZonaItalia(cap) {
   const prefix = cap.substring(0, 2);
-  if (zoneItaliaCAP.A.includes(prefix)) return "A";
+  if (zoneItaliaCAP.Toscana.includes(prefix)) return "Toscana";
   if (zoneItaliaCAP.B.includes(prefix)) return "B";
-  if (zoneItaliaCAP.C.includes(prefix)) return "C";
+  if (zoneItaliaCAP.A.includes(prefix)) return "A";
   return null;
 }
 
 /**
- * Determina la zona Europa in base alla nazione
+ * Determina la zona internazionale in base alla nazione
  * @param {string} nazione - Nome della nazione
- * @returns {string|null} - Zona (zona1, zona2, zona3) o null
+ * @returns {number|null} - Numero zona (1-5) o null
  */
-function getZonaEuropa(nazione) {
-  for (const [zona, paesi] of Object.entries(paesiEuropa)) {
-    if (paesi.some(p => nazione.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(nazione.toLowerCase()))) {
-      return zona;
-    }
-  }
-  return null;
-}
+function getZonaInternazionale(nazione) {
+  const nazioneLower = nazione.toLowerCase();
 
-/**
- * Determina la zona Extra-UE in base alla nazione
- * @param {string} nazione - Nome della nazione
- * @returns {string|null} - Zona (zona1, zona2, zona3, zona4) o null
- */
-function getZonaExtraUE(nazione) {
-  for (const [zona, paesi] of Object.entries(zoneExtraUE)) {
-    if (paesi.some(p => nazione.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(nazione.toLowerCase()))) {
-      return zona;
-    }
+  // Zona 5 (USA) - controllo per primo perché più specifico
+  if (paesiZona5.some(p => nazioneLower.includes(p.toLowerCase()) || p.toLowerCase().includes(nazioneLower))) {
+    return 5;
   }
-  return null;
-}
+  if (cittaUSA.some(c => nazioneLower.includes(c.toLowerCase()) || c.toLowerCase().includes(nazioneLower))) {
+    return 5;
+  }
 
-/**
- * Determina la zona USA in base alla città/stato
- * @param {string} citta - Città o stato USA
- * @returns {string} - Zona (zona1, zona2, zona3), default zona2
- */
-function getZonaUSA(citta) {
-  for (const [zona, cittaList] of Object.entries(zoneUSA)) {
-    if (cittaList.some(c => citta.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(citta.toLowerCase()))) {
-      return zona;
-    }
+  // Zona 1 (Europa vicina)
+  if (paesiZona1.some(p => nazioneLower.includes(p.toLowerCase()) || p.toLowerCase().includes(nazioneLower))) {
+    return 1;
   }
-  return "zona2"; // default zona centrale
+
+  // Zona 2 (Balcani & Est Europa)
+  if (paesiZona2.some(p => nazioneLower.includes(p.toLowerCase()) || p.toLowerCase().includes(nazioneLower))) {
+    return 2;
+  }
+
+  // Zona 3 (Mondo)
+  if (paesiZona3.some(p => nazioneLower.includes(p.toLowerCase()) || p.toLowerCase().includes(nazioneLower))) {
+    return 3;
+  }
+
+  // Zona 4 (Americhe)
+  if (paesiZona4.some(p => nazioneLower.includes(p.toLowerCase()) || p.toLowerCase().includes(nazioneLower))) {
+    return 4;
+  }
+
+  return null;
 }
 
 /**
  * Calcola il prezzo per spedizione Italia
  * @param {number} pesoTassabile - Peso tassabile in kg
- * @param {string} zona - Zona (A, B, C)
+ * @param {string} zona - Zona (Toscana, A, B)
  * @returns {number} - Prezzo in euro
  */
 function calcolaPrezzoItalia(pesoTassabile, zona) {
@@ -306,37 +304,78 @@ function calcolaPrezzoItalia(pesoTassabile, zona) {
 }
 
 /**
- * Calcola il prezzo per spedizione Europa
+ * Calcola il prezzo per spedizione internazionale
  * @param {number} pesoTassabile - Peso tassabile in kg
- * @param {string} zona - Zona (zona1, zona2, zona3)
+ * @param {number} zona - Numero zona (1-5)
  * @returns {number} - Prezzo in euro
  */
+function calcolaPrezzoInternazionale(pesoTassabile, zona) {
+  let tabella;
+  switch(zona) {
+    case 1: tabella = tariffeZona1; break;
+    case 2: tabella = tariffeZona2; break;
+    case 3: tabella = tariffeZona3; break;
+    case 4: tabella = tariffeZona4; break;
+    case 5: tabella = tariffeZona5; break;
+    default: return 0;
+  }
+  return trovaPrezzoPerPeso(pesoTassabile, tabella);
+}
+
+// ============================================================================
+// BACKWARDS COMPATIBILITY (per codice esistente main.js)
+// ============================================================================
+
+// Variabili di compatibilità per main.js
+const paesiEuropa = {
+  zona1: paesiZona1,
+  zona2: [],
+  zona3: []
+};
+
+const zoneExtraUE = {
+  zona1: paesiZona2,
+  zona2: [],
+  zona3: paesiZona3,
+  zona4: paesiZona4
+};
+
+const zoneUSA = {
+  zona1: cittaUSA,
+  zona2: [],
+  zona3: []
+};
+
+// Manteniamo le funzioni vecchie per compatibilità con main.js
 function calcolaPrezzoEuropa(pesoTassabile, zona) {
-  const tabella = tariffeEuropa[zona];
-  if (!tabella) return 0;
-  return trovaPrezzoPerPeso(pesoTassabile, tabella);
+  // Mappa vecchie zone Europa alla nuova Zona 1
+  return calcolaPrezzoInternazionale(pesoTassabile, 1);
 }
 
-/**
- * Calcola il prezzo per spedizione Extra-UE
- * @param {number} pesoTassabile - Peso tassabile in kg
- * @param {string} zona - Zona (zona1, zona2, zona3, zona4)
- * @returns {number} - Prezzo in euro
- */
 function calcolaPrezzoExtraUE(pesoTassabile, zona) {
-  const tabella = tariffeExtraUE[zona];
-  if (!tabella) return 0;
-  return trovaPrezzoPerPeso(pesoTassabile, tabella);
+  // Mappa vecchie zone Extra-UE alle nuove
+  const zonaMap = { zona1: 2, zona2: 2, zona3: 3, zona4: 4 };
+  return calcolaPrezzoInternazionale(pesoTassabile, zonaMap[zona] || 3);
 }
 
-/**
- * Calcola il prezzo per spedizione USA
- * @param {number} pesoTassabile - Peso tassabile in kg
- * @param {string} zona - Zona (zona1, zona2, zona3)
- * @returns {number} - Prezzo in euro
- */
 function calcolaPrezzoUSA(pesoTassabile, zona) {
-  const tabella = tariffeUSA[zona];
-  if (!tabella) return 0;
-  return trovaPrezzoPerPeso(pesoTassabile, tabella);
+  return calcolaPrezzoInternazionale(pesoTassabile, 5);
+}
+
+function getZonaEuropa(nazione) {
+  const zona = getZonaInternazionale(nazione);
+  return zona === 1 ? "zona1" : null;
+}
+
+function getZonaExtraUE(nazione) {
+  const zona = getZonaInternazionale(nazione);
+  if (zona === 2) return "zona1";
+  if (zona === 3) return "zona3";
+  if (zona === 4) return "zona4";
+  return null;
+}
+
+function getZonaUSA(nazione) {
+  const zona = getZonaInternazionale(nazione);
+  return zona === 5 ? "zona1" : "zona2";
 }
