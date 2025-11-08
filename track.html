@@ -115,8 +115,13 @@
           return `https://www.ups.com/track?track=yes&trackNums=${input}&loc=it_IT&requester=ST/trackdetails`;
         }
 
-        // Se è solo numerico, assumiamo sia un tracking FedEx
-        if (/^\d+$/.test(input)) {
+        // Riconosci tracking DHL (10-11 cifre)
+        if (/^\d{10,11}$/.test(input)) {
+          return `https://www.dhl.com/it-en/home/tracking.html?tracking-id=${input}&submit=1`;
+        }
+
+        // Se è solo numerico con 12+ cifre, assumiamo sia un tracking FedEx
+        if (/^\d{12,}$/.test(input)) {
           // Costruisci URL FedEx con il formato fornito dall'utente
           return `https://www.fedex.com/fedextrack/duplicate-results/select?duplicateTrackingId=${input}&trknbr=${input}`;
         }
@@ -126,8 +131,12 @@
           return `https://${input}`;
         }
 
-        // Altrimenti, prova a costruire un URL FedEx comunque
-        return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(input)}`;
+        // Altrimenti, prova a costruire un URL generico
+        if (/^\d+$/.test(input)) {
+          return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(input)}`;
+        }
+
+        return null;
       }
 
       // Gestione pulsante "Vai" per aprire link
