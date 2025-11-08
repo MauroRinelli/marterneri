@@ -58,6 +58,7 @@
             <th>Destinatario</th>
             <th>N° Tracking / Link</th>
             <th>Apri</th>
+            <th>Copia</th>
           </tr>
         </thead>
         <tbody id="tabella-body">
@@ -66,6 +67,7 @@
             <td><input type="text"></td>
             <td><input type="text" placeholder="N° tracking o URL"></td>
             <td><button class="apri-link">Vai</button></td>
+            <td><button class="copia-link">Copia</button></td>
           </tr>
         </tbody>
       </table>
@@ -94,6 +96,7 @@
             <td><input type="text"></td>
             <td><input type="text" placeholder="N° tracking o URL"></td>
             <td><button class="apri-link">Vai</button></td>
+            <td><button class="copia-link">Copia</button></td>
           `;
           body.appendChild(nuovaRiga);
         });
@@ -150,6 +153,35 @@
 
           if (trackingUrl) {
             window.open(trackingUrl, '_blank');
+          } else {
+            alert('Inserisci un numero di tracking o un link valido');
+          }
+        }
+
+        // Gestione pulsante "Copia" per copiare URL negli appunti
+        if (e.target.classList.contains('copia-link')) {
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          const trackingInput = inputs[2]; // Il terzo input è il tracking
+          const input = trackingInput ? trackingInput.value : '';
+          const trackingUrl = buildTrackingUrl(input);
+
+          if (trackingUrl) {
+            // Copia negli appunti
+            navigator.clipboard.writeText(trackingUrl).then(() => {
+              const btn = e.target;
+              const originalText = btn.textContent;
+              btn.textContent = '✓ Copiato!';
+              btn.style.backgroundColor = '#28a745';
+
+              // Ripristina il testo originale dopo 2 secondi
+              setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.backgroundColor = '';
+              }, 2000);
+            }).catch(err => {
+              alert('Errore durante la copia: ' + err);
+            });
           } else {
             alert('Inserisci un numero di tracking o un link valido');
           }
