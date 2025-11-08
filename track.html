@@ -56,7 +56,7 @@
           <tr>
             <th>Mittente</th>
             <th>Destinatario</th>
-            <th>Link Tracking</th>
+            <th>N° Tracking / Link</th>
             <th>Apri</th>
           </tr>
         </thead>
@@ -99,14 +99,42 @@
         });
       }
 
+      // Funzione per costruire URL di tracking
+      function buildTrackingUrl(input) {
+        if (!input) return null;
+
+        input = input.trim();
+
+        // Se contiene già http/https, è un URL completo
+        if (input.match(/^https?:\/\//i)) {
+          return input;
+        }
+
+        // Se è solo numerico, assumiamo sia un tracking FedEx
+        if (/^\d+$/.test(input)) {
+          // Costruisci URL FedEx con il formato fornito dall'utente
+          return `https://www.fedex.com/fedextrack/duplicate-results/select?duplicateTrackingId=${input}&trknbr=${input}`;
+        }
+
+        // Se sembra un URL senza protocollo, aggiungi https://
+        if (input.includes('.') && !input.includes(' ')) {
+          return `https://${input}`;
+        }
+
+        // Altrimenti, prova a costruire un URL FedEx comunque
+        return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(input)}`;
+      }
+
       // Gestione pulsante "Vai" per aprire link
       document.addEventListener('click', e => {
         if (e.target.classList.contains('apri-link')) {
-          const link = e.target.closest('tr').querySelector('input[type="url"]').value;
-          if (link) {
-            window.open(link, '_blank');
+          const input = e.target.closest('tr').querySelector('input[type="url"]').value;
+          const trackingUrl = buildTrackingUrl(input);
+
+          if (trackingUrl) {
+            window.open(trackingUrl, '_blank');
           } else {
-            alert('Inserisci un link valido');
+            alert('Inserisci un numero di tracking o un link valido');
           }
         }
       });
