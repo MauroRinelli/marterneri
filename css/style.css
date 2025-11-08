@@ -350,3 +350,278 @@ html, body {
   color: #000000;
   border-color: var(--accent);
 }
+
+/* ====== Mobile Responsive Optimization ====== */
+
+/* Hamburger menu button */
+.hamburger-btn {
+  display: none; /* Hidden by default on desktop */
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 15;
+  background: #1a1a1a;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: .25s ease;
+}
+
+.hamburger-btn span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: .25s ease;
+}
+
+.hamburger-btn:hover {
+  background: #2a2a2a;
+  border-color: var(--accent);
+}
+
+/* Hamburger animation when sidebar is open */
+body.sidebar-open .hamburger-btn span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+body.sidebar-open .hamburger-btn span:nth-child(2) {
+  opacity: 0;
+}
+
+body.sidebar-open .hamburger-btn span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .main {
+    padding: 12px;
+  }
+
+  .chat-log {
+    padding: 16px;
+  }
+
+  .composer {
+    padding: 12px;
+  }
+
+  .composer textarea {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .sb-btn {
+    padding: 14px 16px;
+  }
+
+  .shipping-table-section {
+    padding: 16px;
+  }
+}
+
+/* Mobile (max 767px) */
+@media (max-width: 767px) {
+  body {
+    font-size: 14px;
+  }
+
+  /* Show hamburger button on mobile */
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .main {
+    padding: 8px;
+    margin-left: 0; /* Remove sidebar margin on mobile */
+    padding-top: 72px; /* Space for hamburger button */
+  }
+
+  /* Sidebar ottimizzata per mobile */
+  .sb {
+    width: 280px;
+    left: -280px;
+  }
+
+  .sb-header {
+    padding: 16px;
+  }
+
+  .sb-header .logo {
+    height: 40px;
+  }
+
+  .sb-header .brand {
+    font-size: 18px;
+  }
+
+  /* Pulsanti sidebar più grandi per touch */
+  .sb-btn {
+    padding: 16px 20px;
+    font-size: 16px;
+    min-height: 56px; /* Touch-friendly size */
+  }
+
+  .sb-btn .btn-icon-img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .sb-btn .btn-text {
+    font-size: 16px;
+  }
+
+  /* Chat log ottimizzata */
+  .chat-log {
+    padding: 12px;
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .chat-bubble {
+    max-width: 95%;
+    padding: 12px 14px;
+    font-size: 15px;
+    border-radius: 16px;
+  }
+
+  .chat-bubble.user {
+    margin-left: 5%;
+  }
+
+  .chat-bubble.assistant {
+    margin-right: 5%;
+  }
+
+  /* Composer ottimizzato per mobile */
+  .composer {
+    padding: 10px;
+    border-radius: 10px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .composer textarea {
+    font-size: 16px; /* Prevent iOS auto-zoom */
+    min-height: 48px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .composer .send {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    min-height: 48px;
+    border-radius: 10px;
+  }
+
+  /* Shipping table mobile */
+  .shipping-table-section {
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  .shipping-table-section h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* Zone selection */
+  .zone-select-btn {
+    padding: 16px;
+    min-height: 70px;
+  }
+
+  .zone-select-btn .zone-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .zone-select-btn .zone-info strong {
+    font-size: 15px;
+  }
+
+  .zone-select-btn .zone-info small {
+    font-size: 11px;
+  }
+
+  /* Lock banner mobile */
+  .lock-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .lock-banner .reset-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Mobile piccolo (max 480px) */
+@media (max-width: 480px) {
+  .main {
+    padding: 6px;
+  }
+
+  .chat-log {
+    padding: 10px;
+  }
+
+  .chat-bubble {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .composer {
+    padding: 8px;
+  }
+
+  .sb {
+    width: 260px;
+    left: -260px;
+  }
+
+  .sb-btn {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+
+  .shipping-table-section {
+    padding: 10px;
+  }
+
+  .zone-select-btn {
+    padding: 12px;
+  }
+}
+
+/* Touch optimization for all mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Ensure all interactive elements are touch-friendly */
+  button, .sb-btn, .send, .add-row-btn, .apri-link {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent text selection on buttons */
+  button, .sb-btn {
+    -webkit-tap-highlight-color: rgba(255, 215, 0, 0.3);
+    user-select: none;
+  }
+
+  /* Larger input areas for better touch experience */
+  input, textarea {
+    font-size: 16px !important; /* Prevent iOS zoom */
+  }
+}

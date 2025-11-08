@@ -280,6 +280,13 @@
   <!-- OVERLAY mobile -->
   <div class="overlay" id="overlay"></div>
 
+  <!-- Hamburger menu button for mobile -->
+  <button id="hamburger" class="hamburger-btn" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
   <!-- MAIN -->
   <main class="main track-page">
     <!-- Tabella Spedizioni -->
@@ -511,6 +518,23 @@ ${mittente}`;
           alert('Errore durante la copia: ' + err);
         });
       });
+
+      // Gestione hamburger menu per mobile
+      const hamburger = document.getElementById('hamburger');
+      const overlay = document.getElementById('overlay');
+
+      function toggleSidebar(open) {
+        const shouldOpen = open ?? !document.body.classList.contains('sidebar-open');
+        document.body.classList.toggle('sidebar-open', shouldOpen);
+      }
+
+      if (hamburger) {
+        hamburger.addEventListener('click', () => toggleSidebar());
+      }
+
+      if (overlay) {
+        overlay.addEventListener('click', () => toggleSidebar(false));
+      }
     });
   </script>
 </body>
