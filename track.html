@@ -319,6 +319,7 @@
         <button id="copia-messaggio" class="add-row-btn">Copia Messaggio</button>
       </div>
     </div>
+    <a href="#" id="mobileSidebarToggle" class="mobile-home-link">MarterNeri</a>
   </main>
 
   <!-- JavaScript tabella spedizioni -->
@@ -511,6 +512,24 @@ ${mittente}`;
           alert('Errore durante la copia: ' + err);
         });
       });
+
+      // Link mobile per aprire la sidebar
+      const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+
+      if (mobileSidebarToggle) {
+        mobileSidebarToggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.body.classList.add('sidebar-open');
+        });
+      }
+
+      if (overlay) {
+        overlay.addEventListener('click', () => {
+          document.body.classList.remove('sidebar-open');
+        });
+      }
     });
   </script>
 </body>
