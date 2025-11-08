@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MarterNeri – Tracking Spedizioni</title>
+  <link rel="stylesheet" href="./css/style.css?v=11">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sb" id="sidebar">
+    <div class="sb-header">
+      <img src="./media/FHP_Group_Logo_RGB.png" alt="FHP Group" class="logo" />
+      <span class="brand">MarterNeri</span>
+    </div>
+
+    <nav class="sb-nav">
+      <a href="index.html" class="sb-btn">
+        <img src="./media/italia.jpg" alt="IT" class="btn-icon-img" />
+        <span class="btn-text">Italia</span>
+      </a>
+      <a href="index.html" class="sb-btn">
+        <img src="./media/eu.png" alt="EU" class="btn-icon-img" />
+        <span class="btn-text">Europa</span>
+      </a>
+      <a href="index.html" class="sb-btn">
+        <img src="./media/icona.png" alt="World" class="btn-icon-img" />
+        <span class="btn-text">Extra-UE</span>
+      </a>
+      <a href="index.html" class="sb-btn">
+        <img src="./media/dollaro260.png" alt="US" class="btn-icon-img" />
+        <span class="btn-text">USA</span>
+      </a>
+      <a href="track.html" class="sb-btn active">
+        <img src="./media/corrire.png" alt="Track" class="btn-icon-img" />
+        <span class="btn-text">Track</span>
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <small>v1.0 • MarterNeri</small>
+    </div>
+  </aside>
+
+  <!-- OVERLAY mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- MAIN -->
+  <main class="main track-page">
+    <!-- Tabella Spedizioni -->
+    <section id="griglia-spedizioni" class="shipping-table-section">
+      <h2>Tabella Spedizioni</h2>
+      <table class="shipping-table">
+        <thead>
+          <tr>
+            <th>Mittente</th>
+            <th>Destinatario</th>
+            <th>Link Tracking</th>
+            <th>Apri</th>
+          </tr>
+        </thead>
+        <tbody id="tabella-body">
+          <tr>
+            <td><input type="text"></td>
+            <td><input type="text"></td>
+            <td><input type="url"></td>
+            <td><button class="apri-link">Vai</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button id="aggiungi-riga" class="add-row-btn">+ Aggiungi riga</button>
+    </section>
+  </main>
+
+  <!-- JavaScript tabella spedizioni -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('aggiungi-riga');
+      const body = document.getElementById('tabella-body');
+
+      // Aggiungi riga alla tabella
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const righe = body.querySelectorAll('tr').length;
+          if (righe >= 10) {
+            alert('Hai raggiunto il massimo di 10 righe');
+            return;
+          }
+
+          const nuovaRiga = document.createElement('tr');
+          nuovaRiga.innerHTML = `
+            <td><input type="text"></td>
+            <td><input type="text"></td>
+            <td><input type="url"></td>
+            <td><button class="apri-link">Vai</button></td>
+          `;
+          body.appendChild(nuovaRiga);
+        });
+      }
+
+      // Gestione pulsante "Vai" per aprire link
+      document.addEventListener('click', e => {
+        if (e.target.classList.contains('apri-link')) {
+          const link = e.target.closest('tr').querySelector('input[type="url"]').value;
+          if (link) {
+            window.open(link, '_blank');
+          } else {
+            alert('Inserisci un link valido');
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
