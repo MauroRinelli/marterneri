@@ -50,6 +50,194 @@
       border-radius: 4px;
       resize: vertical;
     }
+
+    /* Responsive Design - Mobile First */
+
+    /* Tabella responsive con scroll orizzontale su mobile */
+    .shipping-table-section {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Ottimizzazione input per touch screen */
+    .shipping-table input[type="text"] {
+      min-height: 44px; /* Dimensione minima raccommandata per touch */
+      font-size: 16px; /* Evita zoom automatico su iOS */
+    }
+
+    /* Ottimizzazione pulsanti per touch screen */
+    .shipping-table button {
+      min-height: 44px;
+      min-width: 60px;
+      padding: 8px 12px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    /* Tablet (768px - 1024px) */
+    @media screen and (max-width: 1024px) {
+      .shipping-table {
+        font-size: 14px;
+      }
+
+      .shipping-table th,
+      .shipping-table td {
+        padding: 8px;
+      }
+
+      .shipping-table input[type="text"] {
+        width: 100%;
+        min-width: 120px;
+      }
+
+      .modal-content {
+        padding: 20px;
+        width: 95%;
+      }
+    }
+
+    /* Mobile (max 767px) */
+    @media screen and (max-width: 767px) {
+      .shipping-table-section h2 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+      }
+
+      .shipping-table {
+        font-size: 12px;
+        display: block;
+        width: 100%;
+      }
+
+      .shipping-table thead,
+      .shipping-table tbody,
+      .shipping-table th,
+      .shipping-table td,
+      .shipping-table tr {
+        display: block;
+      }
+
+      .shipping-table thead {
+        display: none; /* Nascondi header su mobile */
+      }
+
+      .shipping-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #FFD700;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: rgba(26, 26, 26, 0.5);
+      }
+
+      .shipping-table td {
+        display: flex;
+        flex-direction: column;
+        padding: 8px 0;
+        border: none;
+        text-align: left;
+      }
+
+      .shipping-table td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #FFD700;
+        margin-bottom: 5px;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      /* Pulsanti su mobile in una riga */
+      .shipping-table td:nth-child(4),
+      .shipping-table td:nth-child(5),
+      .shipping-table td:nth-child(6) {
+        display: inline-block;
+        width: 32%;
+        padding: 5px;
+      }
+
+      .shipping-table td:nth-child(4):before,
+      .shipping-table td:nth-child(5):before,
+      .shipping-table td:nth-child(6):before {
+        display: none;
+      }
+
+      .shipping-table button {
+        width: 100%;
+        font-size: 12px;
+        padding: 10px 5px;
+      }
+
+      .shipping-table input[type="text"] {
+        width: 100%;
+        min-width: 100%;
+        font-size: 16px;
+      }
+
+      /* Modale ottimizzato per mobile */
+      .modal-content {
+        padding: 15px;
+        width: 95%;
+        max-width: 95%;
+      }
+
+      .modal-content h3 {
+        font-size: 1.2rem;
+      }
+
+      #messaggio-text {
+        font-size: 14px;
+      }
+
+      .add-row-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+      }
+    }
+
+    /* Mobile piccoli (max 480px) */
+    @media screen and (max-width: 480px) {
+      .shipping-table-section {
+        padding: 10px;
+      }
+
+      .modal-content {
+        padding: 10px;
+      }
+
+      .close-modal {
+        right: 10px;
+        top: 5px;
+        font-size: 24px;
+      }
+
+      #messaggio-text {
+        font-size: 13px;
+        padding: 8px;
+      }
+    }
+
+    /* Landscape mobile */
+    @media screen and (max-width: 767px) and (orientation: landscape) {
+      .shipping-table thead {
+        display: table-header-group; /* Mostra header in landscape */
+      }
+
+      .shipping-table tr {
+        display: table-row;
+        border: none;
+        padding: 0;
+      }
+
+      .shipping-table td {
+        display: table-cell;
+        padding: 8px;
+      }
+
+      .shipping-table td:before {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -110,12 +298,12 @@
         </thead>
         <tbody id="tabella-body">
           <tr>
-            <td><input type="text" placeholder="Nome mittente"></td>
-            <td><input type="text" placeholder="Nome destinatario"></td>
-            <td><input type="text" placeholder="N° tracking o URL"></td>
-            <td><button class="apri-link">Vai</button></td>
-            <td><button class="copia-link">Copia</button></td>
-            <td><button class="invia-messaggio">Invia</button></td>
+            <td data-label="Mittente"><input type="text" placeholder="Nome mittente"></td>
+            <td data-label="Destinatario"><input type="text" placeholder="Nome destinatario"></td>
+            <td data-label="N° Tracking"><input type="text" placeholder="N° tracking o URL"></td>
+            <td data-label="Apri"><button class="apri-link">Vai</button></td>
+            <td data-label="Copia"><button class="copia-link">Copia</button></td>
+            <td data-label="Invia"><button class="invia-messaggio">Invia</button></td>
           </tr>
         </tbody>
       </table>
@@ -150,12 +338,12 @@
 
           const nuovaRiga = document.createElement('tr');
           nuovaRiga.innerHTML = `
-            <td><input type="text" placeholder="Nome mittente"></td>
-            <td><input type="text" placeholder="Nome destinatario"></td>
-            <td><input type="text" placeholder="N° tracking o URL"></td>
-            <td><button class="apri-link">Vai</button></td>
-            <td><button class="copia-link">Copia</button></td>
-            <td><button class="invia-messaggio">Invia</button></td>
+            <td data-label="Mittente"><input type="text" placeholder="Nome mittente"></td>
+            <td data-label="Destinatario"><input type="text" placeholder="Nome destinatario"></td>
+            <td data-label="N° Tracking"><input type="text" placeholder="N° tracking o URL"></td>
+            <td data-label="Apri"><button class="apri-link">Vai</button></td>
+            <td data-label="Copia"><button class="copia-link">Copia</button></td>
+            <td data-label="Invia"><button class="invia-messaggio">Invia</button></td>
           `;
           body.appendChild(nuovaRiga);
         });
