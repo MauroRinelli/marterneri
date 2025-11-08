@@ -110,6 +110,11 @@
           return input;
         }
 
+        // Riconosci tracking UPS (inizia con "1Z" seguito da caratteri alfanumerici)
+        if (/^1Z[A-Z0-9]+$/i.test(input)) {
+          return `https://www.ups.com/track?track=yes&trackNums=${input}&loc=it_IT&requester=ST/trackdetails`;
+        }
+
         // Se è solo numerico, assumiamo sia un tracking FedEx
         if (/^\d+$/.test(input)) {
           // Costruisci URL FedEx con il formato fornito dall'utente
