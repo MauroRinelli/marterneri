@@ -123,9 +123,13 @@
           return `https://www.dhl.com/it-en/home/tracking.html?tracking-id=${input}&submit=1`;
         }
 
-        // Se è solo numerico con 12+ cifre, assumiamo sia un tracking FedEx
-        if (/^\d{12,}$/.test(input)) {
-          // Costruisci URL FedEx con il formato fornito dall'utente
+        // Riconosci tracking Poste Italiane (13 cifre)
+        if (/^\d{13}$/.test(input)) {
+          return `https://www.poste.it/cerca/index.html#/risultati-spedizioni/${input}`;
+        }
+
+        // Riconosci tracking FedEx (12 cifre o 14+ cifre)
+        if (/^\d{12}$/.test(input) || /^\d{14,}$/.test(input)) {
           return `https://www.fedex.com/fedextrack/duplicate-results/select?duplicateTrackingId=${input}&trknbr=${input}`;
         }
 
@@ -134,7 +138,7 @@
           return `https://${input}`;
         }
 
-        // Altrimenti, prova a costruire un URL generico
+        // Altrimenti, prova a costruire un URL generico per FedEx
         if (/^\d+$/.test(input)) {
           return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(input)}`;
         }
