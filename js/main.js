@@ -5,11 +5,8 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 document.addEventListener("DOMContentLoaded", () => {
   // Cache DOM (dopo che il DOM è pronto)
   const chat       = $("#chatLog");
-  const ta         = $("#promptInput");
-  const send       = $("#sendBtn");
   const hamburger  = $("#hamburger");
   const overlay    = $("#overlay");
-  const composer   = $(".composer");
 
   // Stato lock/reset
   let isLocked = false;      // 🔒 blocco attivo finché non fai reset
@@ -30,14 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (hamburger) hamburger.addEventListener("click", () => toggleSidebar());
   if (overlay) overlay.addEventListener("click", () => toggleSidebar(false));
-
-  // ===== Textarea autogrow =====
-  function grow(el) {
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 180) + "px";
-  }
-  if (ta) ta.addEventListener("input", () => grow(ta));
 
   // ===== Chat rendering =====
   function addMsg(role, html, { typing = false } = {}) {
@@ -95,10 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
     isLocked = lock;
     lockNotified = false;
 
-    // I pulsanti sidebar ora sono link, non hanno disabled
-    if (send) send.disabled = lock;
-    if (ta) ta.disabled = lock;
-
     const old = $(".lock-banner");
     if (old) old.remove();
     if (lock) renderLockBanner();
@@ -117,11 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetChat() {
     if (chat) chat.innerHTML = "";
     setLocked(false);
-    if (ta) {
-      ta.value = "";
-      grow(ta);
-      ta.focus();
-    }
     addMsg("assistant", "✅ Chat azzerata. Puoi ripartire con un nuovo preventivo.");
   }
 
@@ -129,10 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function showHome() {
     if (chat) chat.innerHTML = "";
     setLocked(false);
-    if (ta) {
-      ta.value = "";
-      grow(ta);
-    }
 
     const homeMessage = `
       <div style="text-align: center; padding: 40px 20px;">
@@ -457,35 +433,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setLocked(true);
   }
 
-  // ===== Prompt send =====
-  function sendPrompt(text) {
-    if (!text || !text.trim()) return;
-    if (checkLock()) return; // bloccato
-    addMsg("user", text.trim());
-    const t = addMsg("assistant", "", { typing: true });
-    setTimeout(() => replaceTyping(t, "Sto elaborando..."), 500);
-  }
-
-  // Eventi input/send
-  if (send) {
-    send.addEventListener("click", () => {
-      sendPrompt(ta?.value || "");
-      if (ta) {
-        ta.value = "";
-        grow(ta);
-        ta.focus();
-      }
-    });
-  }
-  if (ta) {
-    ta.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        send?.click();
-      }
-    });
-  }
-
   // Mostra la home all'avvio oppure il form specifico in base alla pagina
   const currentPage = window.location.pathname.split('/').pop();
 
@@ -506,7 +453,4 @@ document.addEventListener("DOMContentLoaded", () => {
       // Home page (index.html o nessun file specifico)
       showHome();
   }
-
-  // focus iniziale
-  ta?.focus();
 });
