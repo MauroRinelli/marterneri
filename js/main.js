@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const overlay    = $("#overlay");
   const composer   = $(".composer");
   const sideButtons = $$(".sb-btn");
+  const brandLink  = $("#brandLink");
 
   // Stato lock/reset
   let isLocked = false;      // 🔒 blocco attivo finché non fai reset
@@ -124,6 +125,43 @@ document.addEventListener("DOMContentLoaded", () => {
       ta.focus();
     }
     addMsg("assistant", "✅ Chat azzerata. Puoi ripartire con un nuovo preventivo.");
+  }
+
+  // ===== Home Page =====
+  function showHome() {
+    if (chat) chat.innerHTML = "";
+    setLocked(false);
+    if (ta) {
+      ta.value = "";
+      grow(ta);
+    }
+
+    const homeMessage = `
+      <div style="text-align: center; padding: 40px 20px;">
+        <h1 style="color: var(--accent); font-size: 32px; margin-bottom: 20px;">
+          👋 Benvenuto in MarterNeri
+        </h1>
+        <p style="font-size: 18px; line-height: 1.6; color: var(--text); max-width: 600px; margin: 0 auto 30px;">
+          Il tuo assistente per calcolare preventivi di spedizione in modo rapido e professionale.
+        </p>
+        <div style="background: #1a1a1a; border: 1px solid var(--stroke); border-radius: 12px; padding: 20px; max-width: 500px; margin: 0 auto;">
+          <h2 style="color: var(--accent); font-size: 20px; margin-bottom: 15px;">
+            🚀 Per iniziare
+          </h2>
+          <p style="font-size: 16px; line-height: 1.6; color: var(--muted);">
+            Seleziona una destinazione dalla barra laterale:
+          </p>
+          <ul style="list-style: none; padding: 0; margin: 20px 0 0 0; text-align: left;">
+            <li style="padding: 8px 0; font-size: 16px;">🇮🇹 <strong>Italia</strong> - Spedizioni nazionali</li>
+            <li style="padding: 8px 0; font-size: 16px;">🇪🇺 <strong>Europa</strong> - Spedizioni europee</li>
+            <li style="padding: 8px 0; font-size: 16px;">🌍 <strong>Extra-UE</strong> - Spedizioni internazionali</li>
+            <li style="padding: 8px 0; font-size: 16px;">🇺🇸 <strong>USA</strong> - Spedizioni negli Stati Uniti</li>
+          </ul>
+        </div>
+      </div>
+    `;
+
+    addMsg("assistant", homeMessage);
   }
 
   // ===== Funzioni helper e calcolo tariffe =====
@@ -477,6 +515,18 @@ document.addEventListener("DOMContentLoaded", () => {
       renderQuoteForm(targetType);
     });
   });
+
+  // Brand link → torna alla home
+  if (brandLink) {
+    brandLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleSidebar(false);
+      showHome();
+    });
+  }
+
+  // Mostra la home all'avvio
+  showHome();
 
   // focus iniziale
   ta?.focus();

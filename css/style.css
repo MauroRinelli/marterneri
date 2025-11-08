@@ -54,7 +54,8 @@ html, body {
 }
 .sb-header{ display:flex; align-items:center; gap:10px; }
 .logo{ width:70px; height:70px; object-fit:contain; border-radius:50%; }
-.brand{ font-weight:700; letter-spacing:.3px; }
+.brand{ font-weight:700; letter-spacing:.3px; color:var(--text); text-decoration:none; cursor:pointer; transition:.2s ease; }
+.brand:hover{ color:var(--accent); }
 
 .sb-nav{ overflow-y:auto; padding-right:6px; margin-top:6px; }
 .sb-btn{
