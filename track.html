@@ -64,7 +64,7 @@
           <tr>
             <td><input type="text"></td>
             <td><input type="text"></td>
-            <td><input type="url"></td>
+            <td><input type="text" placeholder="N° tracking o URL"></td>
             <td><button class="apri-link">Vai</button></td>
           </tr>
         </tbody>
@@ -92,7 +92,7 @@
           nuovaRiga.innerHTML = `
             <td><input type="text"></td>
             <td><input type="text"></td>
-            <td><input type="url"></td>
+            <td><input type="text" placeholder="N° tracking o URL"></td>
             <td><button class="apri-link">Vai</button></td>
           `;
           body.appendChild(nuovaRiga);
@@ -133,7 +133,10 @@
       // Gestione pulsante "Vai" per aprire link
       document.addEventListener('click', e => {
         if (e.target.classList.contains('apri-link')) {
-          const input = e.target.closest('tr').querySelector('input[type="url"]').value;
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          const trackingInput = inputs[2]; // Il terzo input è il tracking
+          const input = trackingInput ? trackingInput.value : '';
           const trackingUrl = buildTrackingUrl(input);
 
           if (trackingUrl) {
