@@ -33,10 +33,35 @@ html, body {
   padding: 26px;
   background-color: var(--main-bg);  /* sfondo scuro per l'area centrale */
   overflow-y: auto;
+  position: relative;
 }
 .main.track-page {
   display: block;
   padding: 40px;
+}
+
+/* Link mobile home - visibile solo su tablet e smartphone */
+.mobile-home-link {
+  display: none; /* Nascosto su desktop */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--accent);
+  color: #000000;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  transition: .2s ease;
+}
+
+.mobile-home-link:hover {
+  background: var(--accent-2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 
@@ -153,6 +178,14 @@ html, body {
 .zone-select-btn:hover .zone-info small{ color:#555555; }
 
 /* ====== Responsive ====== */
+/* Tablet e smartphone - mostra link home mobile */
+@media (max-width: 1024px){
+  .mobile-home-link {
+    display: block;
+  }
+}
+
+/* Mobile - sidebar nascosta */
 @media (max-width: 880px){
   .sb{
     position:fixed; left:-300px; top:0; bottom:0; z-index:10; transition:.25s ease;
