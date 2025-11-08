@@ -1,8 +1,8 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // ===== Helpers =====
-  const $ = (s, r = document) => r.querySelector(s);
-  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+// ===== Helpers globali =====
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
+document.addEventListener("DOMContentLoaded", () => {
   // Cache DOM (dopo che il DOM è pronto)
   const chat       = $("#chatLog");
   const ta         = $("#promptInput");
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isLocked = lock;
     lockNotified = false;
 
-    sideButtons.forEach((b) => (b.disabled = lock));
+    // I pulsanti sidebar ora sono link, non hanno disabled
     if (send) send.disabled = lock;
     if (ta) ta.disabled = lock;
 
