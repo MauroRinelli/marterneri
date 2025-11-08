@@ -5,6 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MarterNeri – Tracking Spedizioni</title>
   <link rel="stylesheet" href="./css/style.css?v=11">
+  <style>
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: #1a1a1a;
+      padding: 30px;
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 90%;
+      position: relative;
+    }
+    .modal-content h3 {
+      color: #FFD700;
+      margin-top: 0;
+    }
+    .close-modal {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #FFD700;
+      cursor: pointer;
+    }
+    .close-modal:hover {
+      color: #fff;
+    }
+    #messaggio-text {
+      background-color: #2a2a2a;
+      color: #fff;
+      border: 1px solid #FFD700;
+      border-radius: 4px;
+      resize: vertical;
+    }
+  </style>
 </head>
 <body>
 
@@ -59,20 +105,32 @@
             <th>N° Tracking / Link</th>
             <th>Apri</th>
             <th>Copia</th>
+            <th>Invia</th>
           </tr>
         </thead>
         <tbody id="tabella-body">
           <tr>
-            <td><input type="text"></td>
-            <td><input type="text"></td>
+            <td><input type="text" placeholder="Nome mittente"></td>
+            <td><input type="text" placeholder="Nome destinatario"></td>
             <td><input type="text" placeholder="N° tracking o URL"></td>
             <td><button class="apri-link">Vai</button></td>
             <td><button class="copia-link">Copia</button></td>
+            <td><button class="invia-messaggio">Invia</button></td>
           </tr>
         </tbody>
       </table>
       <button id="aggiungi-riga" class="add-row-btn">+ Aggiungi riga</button>
     </section>
+
+    <!-- Modale per messaggio tracking -->
+    <div id="messaggio-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Messaggio Tracking</h3>
+        <textarea id="messaggio-text" readonly rows="8" style="width: 100%; padding: 10px; font-family: inherit; margin-bottom: 10px;"></textarea>
+        <button id="copia-messaggio" class="add-row-btn">Copia Messaggio</button>
+      </div>
+    </div>
   </main>
 
   <!-- JavaScript tabella spedizioni -->
@@ -92,11 +150,12 @@
 
           const nuovaRiga = document.createElement('tr');
           nuovaRiga.innerHTML = `
-            <td><input type="text"></td>
-            <td><input type="text"></td>
+            <td><input type="text" placeholder="Nome mittente"></td>
+            <td><input type="text" placeholder="Nome destinatario"></td>
             <td><input type="text" placeholder="N° tracking o URL"></td>
             <td><button class="apri-link">Vai</button></td>
             <td><button class="copia-link">Copia</button></td>
+            <td><button class="invia-messaggio">Invia</button></td>
           `;
           body.appendChild(nuovaRiga);
         });
@@ -190,6 +249,79 @@
             alert('Inserisci un numero di tracking o un link valido');
           }
         }
+
+        // Gestione pulsante "Invia" per generare messaggio
+        if (e.target.classList.contains('invia-messaggio')) {
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          const mittente = inputs[0] ? inputs[0].value.trim() : '';
+          const destinatario = inputs[1] ? inputs[1].value.trim() : '';
+          const trackingInput = inputs[2] ? inputs[2].value.trim() : '';
+
+          if (!mittente || !destinatario || !trackingInput) {
+            alert('Compila tutti i campi (Mittente, Destinatario e N° Tracking)');
+            return;
+          }
+
+          const trackingUrl = buildTrackingUrl(trackingInput);
+          if (!trackingUrl) {
+            alert('Numero di tracking non valido');
+            return;
+          }
+
+          // Genera il messaggio
+          const messaggio = `Gentile ${destinatario},
+
+La spedizione da parte di ${mittente} è stata inviata.
+
+Codice di monitoraggio: ${trackingInput}
+
+Puoi tracciare la tua spedizione al seguente link:
+${trackingUrl}
+
+Cordiali saluti,
+${mittente}`;
+
+          // Mostra il modale con il messaggio
+          const modal = document.getElementById('messaggio-modal');
+          const textarea = document.getElementById('messaggio-text');
+          textarea.value = messaggio;
+          modal.style.display = 'flex';
+        }
+      });
+
+      // Gestione chiusura modale
+      const modal = document.getElementById('messaggio-modal');
+      const closeBtn = document.querySelector('.close-modal');
+
+      closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+
+      // Chiudi modale cliccando fuori
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+
+      // Gestione copia messaggio dal modale
+      document.getElementById('copia-messaggio').addEventListener('click', () => {
+        const textarea = document.getElementById('messaggio-text');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(() => {
+          const btn = document.getElementById('copia-messaggio');
+          const originalText = btn.textContent;
+          btn.textContent = '✓ Messaggio Copiato!';
+          btn.style.backgroundColor = '#28a745';
+
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.backgroundColor = '';
+          }, 2000);
+        }).catch(err => {
+          alert('Errore durante la copia: ' + err);
+        });
       });
     });
   </script>
