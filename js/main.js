@@ -453,4 +453,13 @@ document.addEventListener("DOMContentLoaded", () => {
       // Home page (index.html o nessun file specifico)
       showHome();
   }
+
+  // Link mobile per aprire la sidebar
+  const mobileSidebarToggle = $("#mobileSidebarToggle");
+  if (mobileSidebarToggle) {
+    mobileSidebarToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleSidebar(true);
+    });
+  }
 });
