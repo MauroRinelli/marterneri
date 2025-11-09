@@ -183,6 +183,25 @@ html, body {
   .mobile-home-link {
     display: block;
   }
+
+  /* Ottimizzazione form preventivi per tablet */
+  .quote-form input,
+  .quote-form select {
+    min-height: 40px;
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  .quote-form button {
+    min-height: 40px;
+    font-size: 15px;
+    padding: 10px 14px;
+  }
+
+  /* Zone selection buttons per tablet */
+  .zone-select-btn {
+    padding: 14px 16px;
+  }
 }
 
 /* Mobile - sidebar nascosta */
@@ -193,7 +212,83 @@ html, body {
   body.sidebar-open .sb{ left:0; }
   body.sidebar-open .overlay{ opacity:1; pointer-events:auto; }
   body.sidebar-open .mobile-home-link{ display:none; }
+
+  /* Ottimizzazione form preventivi per mobile/tablet */
+  .quote-form {
+    padding: 16px;
+  }
+
+  .quote-form .row {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .quote-form input,
+  .quote-form select {
+    width: 100%;
+    min-height: 44px; /* Dimensione minima per touch */
+    font-size: 16px; /* Evita zoom automatico su iOS */
+    padding: 12px;
+  }
+
+  .quote-form button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+    padding: 12px 16px;
+    margin-top: 8px;
+  }
+
+  /* Zone selection buttons ottimizzati per mobile */
+  .zone-select-btn {
+    padding: 16px;
+    min-height: 70px;
+  }
+
+  .zone-select-btn .zone-icon {
+    font-size: 32px;
+  }
+
+  .zone-select-btn .zone-info strong {
+    font-size: 18px;
+  }
+
+  .zone-select-btn .zone-info small {
+    font-size: 13px;
+  }
 }
+
+/* Mobile piccoli (max 480px) - ulteriore ottimizzazione */
+@media (max-width: 480px){
+  .quote-form {
+    padding: 12px;
+  }
+
+  .quote-form .row {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .quote-form input,
+  .quote-form select {
+    padding: 10px;
+    font-size: 16px; /* Mantieni 16px per evitare zoom su iOS */
+  }
+
+  .quote-form button {
+    padding: 12px;
+  }
+
+  .chat-log {
+    padding: 12px;
+  }
+
+  .main {
+    padding: 16px;
+  }
+}
+
 /* === HOTFIX DARK BACKGROUND === */
 html, body {
   background: #000 !important;   /* nero pieno */
