@@ -105,8 +105,8 @@ html, body {
 }
 /* Overlay mobile */
 .overlay{
-  position:fixed; inset:0; background:rgba(0,0,0,.5); opacity:0; pointer-events:none;
-  transition:.2s; z-index:9;
+  position:fixed; inset:0; background:rgba(0,0,0,.7); opacity:0; pointer-events:none;
+  transition:.2s; z-index:998;
 }
 
 /* Chat */
@@ -188,10 +188,11 @@ html, body {
 /* Mobile - sidebar nascosta */
 @media (max-width: 880px){
   .sb{
-    position:fixed; left:-300px; top:0; bottom:0; z-index:10; transition:.25s ease;
+    position:fixed; left:-300px; top:0; bottom:0; z-index:1000; transition:.25s ease;
   }
   body.sidebar-open .sb{ left:0; }
   body.sidebar-open .overlay{ opacity:1; pointer-events:auto; }
+  body.sidebar-open .mobile-home-link{ display:none; }
 }
 /* === HOTFIX DARK BACKGROUND === */
 html, body {
