@@ -434,24 +434,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Mostra la home all'avvio oppure il form specifico in base alla pagina
-  const currentPage = window.location.pathname.split('/').pop();
+  const currentPath = window.location.pathname.toLowerCase();
 
-  switch(currentPage) {
-    case 'italia.html':
-      renderQuoteForm('italia');
-      break;
-    case 'europa.html':
-      renderQuoteForm('europa');
-      break;
-    case 'extraue.html':
-      renderQuoteForm('extraue');
-      break;
-    case 'usa.html':
-      renderQuoteForm('usa');
-      break;
-    default:
-      // Home page (index.html o nessun file specifico)
-      showHome();
+  // Usa includes() per gestire diversi formati URL (con/senza .html, con parametri, etc.)
+  if (currentPath.includes('italia')) {
+    renderQuoteForm('italia');
+  } else if (currentPath.includes('europa')) {
+    renderQuoteForm('europa');
+  } else if (currentPath.includes('extraue')) {
+    renderQuoteForm('extraue');
+  } else if (currentPath.includes('usa')) {
+    renderQuoteForm('usa');
+  } else {
+    // Home page (index.html o nessun file specifico)
+    showHome();
   }
 
   // Link mobile per aprire la sidebar
@@ -462,4 +458,15 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleSidebar(true);
     });
   }
+
+  // Chiudi sidebar quando si clicca su link di navigazione (solo su mobile)
+  const sidebarLinks = $$(".sb-btn");
+  sidebarLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      // Chiudi la sidebar se è aperta (tipicamente su mobile/tablet)
+      if (document.body.classList.contains("sidebar-open")) {
+        toggleSidebar(false);
+      }
+    });
+  });
 });
