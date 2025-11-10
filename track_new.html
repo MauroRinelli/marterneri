@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solespress – Tracking Spedizioni</title>
+  <!-- Libreria per scansione barcode -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    /* ====== BASE ====== */
+    * { box-sizing: border-box; }
+
+    :root{
+      --bg: #000000;
+      --main-bg: #0d0d0d;
+      --panel: #111111;
+      --panel-2:#121212;
+      --stroke:#1f1f1f;
+      --text:#e9e9e9;
+      --muted:#a9a9a9;
+      --accent:#F5D142;
+      --accent-2:#d4b535;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ====== MAIN ====== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-width: 0;
+      padding: 26px;
+      background-color: var(--main-bg);
+      overflow-y: auto;
+      position: relative;
+    }
+    .main.track-page {
+      display: block;
+      padding: 40px;
+    }
+
+    /* Link mobile home */
+    .mobile-home-link {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent);
+      color: #000000;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      transition: .2s ease;
+    }
+
+    .mobile-home-link:hover {
+      background: var(--accent-2);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ====== SIDEBAR ====== */
+    .sb{
+      width: 280px;
+      background: var(--panel-2);
+      border-right: 1px solid var(--stroke);
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 14px;
+      gap: 10px;
+    }
+    .sb-header{ display:flex; align-items:center; gap:10px; }
+    .logo{ width:70px; height:70px; object-fit:contain; border-radius:50%; }
+    .brand{ font-weight:700; letter-spacing:.3px; color:var(--text); text-decoration:none; cursor:pointer; transition:.2s ease; }
+    .brand:hover{ color:var(--accent); }
+
+    .sb-nav{ overflow-y:auto; padding-right:6px; margin-top:6px; }
+    .sb-btn{
+      width:100%; background:#181818; border:1px solid var(--stroke); color:var(--text);
+      text-align:left; padding:12px 14px; border-radius:10px; margin-bottom:8px;
+      cursor:pointer; transition:.18s ease; display:flex; align-items:center; gap:12px;
+      text-decoration:none;
+    }
+    .sb-btn:hover{ border-color:#2a2a2a; background:var(--accent); }
+    .sb-btn:hover .btn-text{ color:#000000; }
+    .sb-btn.active{ background:var(--accent); border-color:var(--accent); }
+    .sb-btn.active .btn-text{ color:#000000; }
+    .sb-btn .btn-icon{ font-size:24px; line-height:1; }
+    .sb-btn .btn-icon-img{ width:28px; height:28px; object-fit:contain; }
+    .sb-btn .btn-text{ font-weight:600; font-size:15px; }
+
+    .sb-footer{ border-top:1px solid var(--stroke); padding-top:10px; color:var(--muted); text-align:center; font-size:12px; }
+
+    /* Overlay mobile */
+    .overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.7); opacity:0; pointer-events:none;
+      transition:.2s; z-index:998;
+    }
+
+    /* === Tabella Spedizioni === */
+    .shipping-table-section {
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .shipping-table-section h2 {
+      color: var(--text);
+      font-size: 18px;
+      margin: 0 0 16px 0;
+      font-weight: 600;
+    }
+
+    .shipping-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+    }
+
+    .shipping-table thead {
+      background: #1a1a1a;
+    }
+
+    .shipping-table th {
+      color: var(--accent);
+      text-align: left;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      border-bottom: 2px solid var(--stroke);
+    }
+
+    .shipping-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--stroke);
+    }
+
+    .shipping-table input[type="text"],
+    .shipping-table input[type="url"] {
+      width: 100%;
+      background: #0f0f0f;
+      color: var(--text);
+      border: 1px solid var(--stroke);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 14px;
+      outline: none;
+      transition: .2s;
+      min-height: 44px;
+    }
+
+    .shipping-table input:focus {
+      border-color: var(--accent);
+      background: #1a1a1a;
+    }
+
+    .shipping-table button {
+      background: var(--accent);
+      color: #000000;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: .2s;
+      white-space: nowrap;
+      min-height: 44px;
+    }
+
+    .shipping-table button:hover {
+      background: var(--accent-2);
+    }
+
+    .shipping-table .elimina-riga {
+      background: #ff4040;
+    }
+
+    .shipping-table .elimina-riga:hover {
+      background: #ff0000;
+    }
+
+    /* Pulsante scanner */
+    .scan-icon {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 8px;
+      background: var(--accent);
+      color: #000;
+      font-weight: bold;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .scan-icon:hover {
+      background: var(--accent-2);
+    }
+
+    .add-row-btn {
+      background: #1a1a1a;
+      color: var(--accent);
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: .2s;
+      width: 100%;
+    }
+
+    .add-row-btn:hover {
+      background: var(--accent);
+      color: #000000;
+      border-color: var(--accent);
+    }
+
+    /* === Modale === */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: var(--panel);
+      padding: 30px;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      position: relative;
+    }
+
+    .modal-content h3 {
+      color: var(--accent);
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .close-modal {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .close-modal:hover {
+      color: var(--text);
+    }
+
+    #messaggio-text {
+      background-color: #0f0f0f;
+      color: var(--text);
+      border: 1px solid var(--stroke);
+      border-radius: 6px;
+      resize: vertical;
+      width: 100%;
+      padding: 10px;
+      font-family: inherit;
+      margin-bottom: 10px;
+    }
+
+    /* Scanner Barcode */
+    #scanner-modal .modal-content {
+      max-width: 800px;
+      width: 95%;
+    }
+
+    #scanner-reader {
+      width: 100%;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    #scanner-result {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: var(--panel);
+      border: 2px solid #28a745;
+      border-radius: 8px;
+      color: #28a745;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+
+    .scanner-controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .scanner-controls button {
+      padding: 12px 24px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .stop-scanner {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    /* ====== Responsive ====== */
+    @media (max-width: 1024px){
+      .mobile-home-link {
+        display: block;
+      }
+    }
+
+    @media (max-width: 880px){
+      .sb{
+        position:fixed; left:-300px; top:0; bottom:0; z-index:1000; transition:.25s ease;
+      }
+      body.sidebar-open .sb{ left:0; }
+      body.sidebar-open .overlay{ opacity:1; pointer-events:auto; }
+      body.sidebar-open .mobile-home-link{ display:none; }
+    }
+
+    /* Mobile responsive per tabella */
+    @media screen and (max-width: 767px) {
+      .main.track-page {
+        padding: 15px;
+      }
+
+      .shipping-table-section {
+        padding: 15px;
+      }
+
+      .shipping-table {
+        display: block;
+      }
+
+      .shipping-table thead,
+      .shipping-table tbody,
+      .shipping-table th,
+      .shipping-table td,
+      .shipping-table tr {
+        display: block;
+      }
+
+      .shipping-table thead {
+        display: none;
+      }
+
+      .shipping-table tr {
+        margin-bottom: 18px;
+        border: 2px solid var(--accent);
+        border-radius: 10px;
+        padding: 15px;
+        background-color: rgba(26, 26, 26, 0.6);
+      }
+
+      .shipping-table td {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 0;
+        border: none;
+      }
+
+      .shipping-table td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: var(--accent);
+        margin-bottom: 6px;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      /* Pulsanti su mobile */
+      .shipping-table td:nth-child(4),
+      .shipping-table td:nth-child(5),
+      .shipping-table td:nth-child(6),
+      .shipping-table td:nth-child(7),
+      .shipping-table td:nth-child(8) {
+        display: inline-block;
+        width: 19%;
+        padding: 5px 2px;
+      }
+
+      .shipping-table td:nth-child(4):before,
+      .shipping-table td:nth-child(5):before,
+      .shipping-table td:nth-child(6):before,
+      .shipping-table td:nth-child(7):before,
+      .shipping-table td:nth-child(8):before {
+        display: none;
+      }
+
+      .shipping-table button {
+        width: 100%;
+        font-size: 11px;
+        padding: 11px 4px;
+      }
+
+      .scan-icon {
+        font-size: 16px;
+      }
+
+      #scanner-modal .modal-content {
+        padding: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      #scanner-reader {
+        max-height: 50vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sb" id="sidebar">
+    <div class="sb-header">
+      <img src="./media/FHP_Group_Logo_RGB.png" alt="FHP Group" class="logo" />
+      <a href="index.html" class="brand">Solespress</a>
+    </div>
+
+    <nav class="sb-nav">
+      <a href="index.html" class="sb-btn">
+        <span class="btn-icon">🏠</span>
+        <span class="btn-text">Home</span>
+      </a>
+      <a href="track_new.html" class="sb-btn active">
+        <span class="btn-icon">📦</span>
+        <span class="btn-text">Tracking</span>
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <small>v1.0 • Solespress</small>
+    </div>
+  </aside>
+
+  <!-- OVERLAY mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- MAIN -->
+  <main class="main track-page">
+    <section id="griglia-spedizioni" class="shipping-table-section">
+      <h2>Tabella Spedizioni</h2>
+      <table class="shipping-table">
+        <thead>
+          <tr>
+            <th>Mittente</th>
+            <th>Destinatario</th>
+            <th>N° Tracking / Link</th>
+            <th>Scan</th>
+            <th>Apri</th>
+            <th>Copia</th>
+            <th>Invia</th>
+            <th>Elimina</th>
+          </tr>
+        </thead>
+        <tbody id="tabella-body">
+          <tr>
+            <td data-label="Mittente"><input type="text" placeholder="Nome mittente"></td>
+            <td data-label="Destinatario"><input type="text" placeholder="Nome destinatario"></td>
+            <td data-label="N° Tracking"><input type="text" placeholder="N° tracking o URL"></td>
+            <td data-label="Scan"><button class="scan-icon scan-barcode" title="Scansiona barcode">📷</button></td>
+            <td data-label="Apri"><button class="apri-link">Vai</button></td>
+            <td data-label="Copia"><button class="copia-link">Copia</button></td>
+            <td data-label="Invia"><button class="invia-messaggio">Invia</button></td>
+            <td data-label="Elimina"><button class="elimina-riga">Elimina</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button id="aggiungi-riga" class="add-row-btn">+ Aggiungi riga</button>
+    </section>
+
+    <a href="#" id="mobileSidebarToggle" class="mobile-home-link">Solespress</a>
+  </main>
+
+  <!-- Modale per messaggio tracking -->
+  <div id="messaggio-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Messaggio Tracking</h3>
+      <textarea id="messaggio-text" readonly rows="8"></textarea>
+      <button id="copia-messaggio" class="add-row-btn">Copia Messaggio</button>
+    </div>
+  </div>
+
+  <!-- Modale per scanner barcode -->
+  <div id="scanner-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-modal" id="close-scanner">&times;</span>
+      <h3>Scansiona Codice Lettera di Vettura</h3>
+      <p style="color: var(--muted); font-size: 14px; margin-bottom: 15px;">
+        Posiziona il barcode davanti alla fotocamera o usa uno scanner USB
+      </p>
+      <div id="scanner-loading" style="text-align: center; padding: 20px; color: var(--accent); font-size: 16px;">
+        📷 Attivazione fotocamera in corso...
+      </div>
+      <div id="scanner-reader" style="display: none;"></div>
+      <div id="scanner-result"></div>
+      <div class="scanner-controls">
+        <button id="stop-scanner" class="stop-scanner" style="display: none;">⏹ Ferma Scanner</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('aggiungi-riga');
+      const body = document.getElementById('tabella-body');
+
+      // Toggle sidebar mobile
+      const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+
+      if (mobileSidebarToggle) {
+        mobileSidebarToggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.body.classList.add('sidebar-open');
+        });
+      }
+
+      if (overlay) {
+        overlay.addEventListener('click', () => {
+          document.body.classList.remove('sidebar-open');
+        });
+      }
+
+      // Aggiungi riga
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const righe = body.querySelectorAll('tr');
+          if (righe.length >= 10) {
+            alert('Hai raggiunto il massimo di 10 righe');
+            return;
+          }
+
+          if (righe.length > 0) {
+            const ultimaRiga = righe[righe.length - 1];
+            const inputs = ultimaRiga.querySelectorAll('input[type="text"]');
+            const mittente = inputs[0] ? inputs[0].value.trim() : '';
+            const destinatario = inputs[1] ? inputs[1].value.trim() : '';
+            const tracking = inputs[2] ? inputs[2].value.trim() : '';
+
+            if (!mittente || !destinatario || !tracking) {
+              alert('Compila tutti i campi della riga precedente prima di aggiungerne una nuova');
+              return;
+            }
+          }
+
+          const nuovaRiga = document.createElement('tr');
+          nuovaRiga.innerHTML = `
+            <td data-label="Mittente"><input type="text" placeholder="Nome mittente"></td>
+            <td data-label="Destinatario"><input type="text" placeholder="Nome destinatario"></td>
+            <td data-label="N° Tracking"><input type="text" placeholder="N° tracking o URL"></td>
+            <td data-label="Scan"><button class="scan-icon scan-barcode" title="Scansiona barcode">📷</button></td>
+            <td data-label="Apri"><button class="apri-link">Vai</button></td>
+            <td data-label="Copia"><button class="copia-link">Copia</button></td>
+            <td data-label="Invia"><button class="invia-messaggio">Invia</button></td>
+            <td data-label="Elimina"><button class="elimina-riga">Elimina</button></td>
+          `;
+          body.appendChild(nuovaRiga);
+        });
+      }
+
+      // Build tracking URL
+      function buildTrackingUrl(input) {
+        if (!input) return null;
+        input = input.trim();
+
+        if (input.match(/^https?:\/\//i)) return input;
+        if (/^1Z[A-Z0-9]+$/i.test(input)) return `https://www.ups.com/track?track=yes&trackNums=${input}&loc=it_IT&requester=ST/trackdetails`;
+        if (/^\d{10,11}$/.test(input)) return `https://www.dhl.com/it-en/home/tracking.html?tracking-id=${input}&submit=1`;
+        if (/^\d{13}$/.test(input)) return `https://www.poste.it/cerca/index.html#/risultati-spedizioni/${input}`;
+        if (/^\d{12}$/.test(input) || /^\d{14,}$/.test(input)) return `https://www.fedex.com/fedextrack/duplicate-results/select?duplicateTrackingId=${input}&trknbr=${input}`;
+        if (input.includes('.') && !input.includes(' ')) return `https://${input}`;
+        if (/^\d+$/.test(input)) return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(input)}`;
+
+        return null;
+      }
+
+      // Event delegation
+      document.addEventListener('click', e => {
+        // Apri link
+        if (e.target.classList.contains('apri-link')) {
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          const trackingUrl = buildTrackingUrl(inputs[2]?.value);
+          if (trackingUrl) {
+            window.open(trackingUrl, '_blank');
+          } else {
+            alert('Inserisci un numero di tracking o un link valido');
+          }
+        }
+
+        // Copia link
+        if (e.target.classList.contains('copia-link')) {
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          const trackingUrl = buildTrackingUrl(inputs[2]?.value);
+          if (trackingUrl) {
+            navigator.clipboard.writeText(trackingUrl).then(() => {
+              const btn = e.target;
+              const originalText = btn.textContent;
+              btn.textContent = '✓';
+              btn.style.backgroundColor = '#28a745';
+              setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.backgroundColor = '';
+              }, 2000);
+            });
+          } else {
+            alert('Inserisci un numero di tracking o un link valido');
+          }
+        }
+
+        // Invia messaggio
+        if (e.target.classList.contains('invia-messaggio')) {
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          const mittente = inputs[0]?.value.trim();
+          const destinatario = inputs[1]?.value.trim();
+          const trackingInput = inputs[2]?.value.trim();
+
+          if (!mittente || !destinatario || !trackingInput) {
+            alert('Compila tutti i campi (Mittente, Destinatario e N° Tracking)');
+            return;
+          }
+
+          const trackingUrl = buildTrackingUrl(trackingInput);
+          if (!trackingUrl) {
+            alert('Numero di tracking non valido');
+            return;
+          }
+
+          const messaggio = `Gentile ${destinatario},
+
+La spedizione da parte di ${mittente} è stata inviata.
+
+Codice di monitoraggio: ${trackingInput}
+
+Puoi tracciare la tua spedizione al seguente link:
+${trackingUrl}
+
+Cordiali saluti,
+${mittente}`;
+
+          document.getElementById('messaggio-text').value = messaggio;
+          document.getElementById('messaggio-modal').style.display = 'flex';
+        }
+
+        // Elimina riga
+        if (e.target.classList.contains('elimina-riga')) {
+          const righe = body.querySelectorAll('tr');
+          if (righe.length <= 1) {
+            alert('Devi mantenere almeno una riga nella tabella');
+            return;
+          }
+          e.target.closest('tr').remove();
+        }
+      });
+
+      // Chiudi modale messaggio
+      const modal = document.getElementById('messaggio-modal');
+      modal.querySelector('.close-modal').addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+
+      // Copia messaggio
+      document.getElementById('copia-messaggio').addEventListener('click', () => {
+        const textarea = document.getElementById('messaggio-text');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(() => {
+          const btn = document.getElementById('copia-messaggio');
+          const originalText = btn.textContent;
+          btn.textContent = '✓ Messaggio Copiato!';
+          btn.style.backgroundColor = '#28a745';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.backgroundColor = '';
+          }, 2000);
+        });
+      });
+
+      // ============================================
+      // SCANNER BARCODE
+      // ============================================
+
+      let html5QrcodeScanner = null;
+      let currentScannerInput = null;
+      let isScanning = false;
+
+      document.addEventListener('click', e => {
+        if (e.target.classList.contains('scan-barcode')) {
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          currentScannerInput = inputs[2];
+
+          document.getElementById('scanner-modal').style.display = 'flex';
+          document.getElementById('scanner-result').style.display = 'none';
+          document.getElementById('scanner-loading').style.display = 'block';
+          document.getElementById('scanner-reader').style.display = 'none';
+
+          setTimeout(() => startScanner(), 300);
+        }
+      });
+
+      function startScanner() {
+        if (isScanning) return;
+
+        html5QrcodeScanner = new Html5Qrcode("scanner-reader");
+
+        html5QrcodeScanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 150 },
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.QR_CODE,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.CODE_93,
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.ITF,
+              Html5QrcodeSupportedFormats.CODABAR
+            ]
+          },
+          (decodedText) => {
+            if (currentScannerInput) {
+              currentScannerInput.value = decodedText;
+              currentScannerInput.focus();
+            }
+
+            document.getElementById('scanner-result').textContent = `✓ Scansionato: ${decodedText}`;
+            document.getElementById('scanner-result').style.display = 'block';
+
+            setTimeout(() => {
+              stopScanner();
+              setTimeout(() => {
+                document.getElementById('scanner-modal').style.display = 'none';
+              }, 1500);
+            }, 500);
+          },
+          () => {}
+        ).then(() => {
+          isScanning = true;
+          document.getElementById('scanner-loading').style.display = 'none';
+          document.getElementById('scanner-reader').style.display = 'block';
+          document.getElementById('stop-scanner').style.display = 'inline-block';
+        }).catch(err => {
+          document.getElementById('scanner-loading').style.display = 'none';
+          alert('Errore nell\'avvio della fotocamera: ' + err);
+        });
+      }
+
+      function stopScanner() {
+        if (html5QrcodeScanner && isScanning) {
+          html5QrcodeScanner.stop().then(() => {
+            html5QrcodeScanner.clear();
+            isScanning = false;
+            document.getElementById('stop-scanner').style.display = 'none';
+          });
+        }
+      }
+
+      document.getElementById('stop-scanner').addEventListener('click', stopScanner);
+      document.getElementById('close-scanner').addEventListener('click', () => {
+        stopScanner();
+        document.getElementById('scanner-modal').style.display = 'none';
+      });
+
+      document.getElementById('scanner-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'scanner-modal') {
+          stopScanner();
+          document.getElementById('scanner-modal').style.display = 'none';
+        }
+      });
+
+      // Scanner USB
+      let usbScannerBuffer = '';
+      let usbScannerTimeout = null;
+
+      document.addEventListener('keypress', (e) => {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+        if (e.key === 'Enter' && usbScannerBuffer.length > 0) {
+          const rows = document.querySelectorAll('#tabella-body tr');
+          for (let row of rows) {
+            const inputs = row.querySelectorAll('input[type="text"]');
+            const trackingInput = inputs[2];
+            if (trackingInput && !trackingInput.value.trim()) {
+              trackingInput.value = usbScannerBuffer.trim();
+              trackingInput.focus();
+              trackingInput.style.backgroundColor = '#28a745';
+              trackingInput.style.color = '#fff';
+              setTimeout(() => {
+                trackingInput.style.backgroundColor = '';
+                trackingInput.style.color = '';
+              }, 1000);
+              break;
+            }
+          }
+          usbScannerBuffer = '';
+        } else {
+          usbScannerBuffer += e.key;
+          clearTimeout(usbScannerTimeout);
+          usbScannerTimeout = setTimeout(() => {
+            usbScannerBuffer = '';
+          }, 100);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
