@@ -453,10 +453,13 @@
         <p style="color: #ccc; font-size: 14px; margin-bottom: 15px;">
           Posiziona il barcode davanti alla fotocamera o usa uno scanner USB
         </p>
-        <div id="scanner-reader"></div>
+        <div id="scanner-loading" style="text-align: center; padding: 20px; color: #FFD700; font-size: 16px;">
+          📷 Attivazione fotocamera in corso...
+        </div>
+        <div id="scanner-reader" style="display: none;"></div>
         <div id="scanner-result"></div>
         <div class="scanner-controls">
-          <button id="start-scanner" class="start-scanner">▶ Avvia Scanner</button>
+          <button id="start-scanner" class="start-scanner" style="display: none;">▶ Avvia Scanner</button>
           <button id="stop-scanner" class="stop-scanner" style="display: none;">⏹ Ferma Scanner</button>
         </div>
       </div>
@@ -726,11 +729,20 @@ ${mittente}`;
           const resultDiv = document.getElementById('scanner-result');
           resultDiv.style.display = 'none';
           resultDiv.textContent = '';
+
+          // Mostra loading, nascondi reader
+          document.getElementById('scanner-loading').style.display = 'block';
+          document.getElementById('scanner-reader').style.display = 'none';
+
+          // AVVIA AUTOMATICAMENTE LO SCANNER
+          setTimeout(() => {
+            startScanner();
+          }, 300); // Piccolo ritardo per permettere al modale di aprirsi
         }
       });
 
-      // Gestione avvio scanner
-      document.getElementById('start-scanner').addEventListener('click', () => {
+      // Funzione per avviare lo scanner
+      function startScanner() {
         if (isScanning) return;
 
         const config = {
@@ -787,13 +799,22 @@ ${mittente}`;
           }
         ).then(() => {
           isScanning = true;
+          // Nascondi loading, mostra reader
+          document.getElementById('scanner-loading').style.display = 'none';
+          document.getElementById('scanner-reader').style.display = 'block';
+          // Mostra pulsante stop
           document.getElementById('start-scanner').style.display = 'none';
           document.getElementById('stop-scanner').style.display = 'inline-block';
         }).catch(err => {
+          // Nascondi loading in caso di errore
+          document.getElementById('scanner-loading').style.display = 'none';
           alert('Errore nell\'avvio della fotocamera: ' + err);
           console.error('Camera error:', err);
         });
-      });
+      }
+
+      // Gestione click sul pulsante "Avvia Scanner" (manuale)
+      document.getElementById('start-scanner').addEventListener('click', startScanner);
 
       // Gestione stop scanner
       function stopScanner() {
