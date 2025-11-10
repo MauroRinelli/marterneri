@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MarterNeri – Tracking Spedizioni</title>
   <link rel="stylesheet" href="./css/style.css?v=11">
+  <!-- Libreria per scansione barcode -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     .modal {
       position: fixed;
@@ -49,6 +51,73 @@
       border: 1px solid #FFD700;
       border-radius: 4px;
       resize: vertical;
+    }
+
+    /* Stili Scanner Barcode */
+    #scanner-modal .modal-content {
+      max-width: 800px;
+      width: 95%;
+    }
+
+    #scanner-reader {
+      width: 100%;
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    #scanner-result {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #2a2a2a;
+      border: 2px solid #28a745;
+      border-radius: 8px;
+      color: #28a745;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+
+    .scanner-controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .scanner-controls button {
+      padding: 12px 24px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .start-scanner {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .stop-scanner {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .scan-icon {
+      min-width: 40px;
+      padding: 8px;
+      background-color: #FFD700;
+      color: #000;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .scan-icon:hover {
+      background-color: #FFC700;
     }
 
     /* Responsive Design - Mobile First */
@@ -150,16 +219,18 @@
       .shipping-table td:nth-child(4),
       .shipping-table td:nth-child(5),
       .shipping-table td:nth-child(6),
-      .shipping-table td:nth-child(7) {
+      .shipping-table td:nth-child(7),
+      .shipping-table td:nth-child(8) {
         display: inline-block;
-        width: 24%;
+        width: 19%;
         padding: 5px;
       }
 
       .shipping-table td:nth-child(4):before,
       .shipping-table td:nth-child(5):before,
       .shipping-table td:nth-child(6):before,
-      .shipping-table td:nth-child(7):before {
+      .shipping-table td:nth-child(7):before,
+      .shipping-table td:nth-child(8):before {
         display: none;
       }
 
@@ -195,6 +266,30 @@
         padding: 12px;
         font-size: 14px;
       }
+
+      /* Scanner ottimizzato per mobile */
+      #scanner-modal .modal-content {
+        padding: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      #scanner-reader {
+        max-height: 50vh;
+      }
+
+      .scanner-controls button {
+        font-size: 13px;
+        padding: 10px 16px;
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .scan-icon {
+        font-size: 18px;
+        min-width: 44px;
+        min-height: 44px;
+      }
     }
 
     /* Mobile piccoli (max 480px) */
@@ -217,6 +312,25 @@
         font-size: 13px;
         padding: 8px;
       }
+
+      #scanner-modal .modal-content {
+        padding: 8px;
+      }
+
+      #scanner-modal h3 {
+        font-size: 1rem;
+        margin-bottom: 8px;
+      }
+
+      #scanner-modal p {
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .scanner-controls button {
+        font-size: 12px;
+        padding: 8px 12px;
+      }
     }
 
     /* Landscape mobile */
@@ -238,6 +352,11 @@
 
       .shipping-table td:before {
         display: none;
+      }
+
+      /* Scanner in landscape */
+      #scanner-reader {
+        max-height: 60vh;
       }
     }
   </style>
@@ -293,6 +412,7 @@
             <th>Mittente</th>
             <th>Destinatario</th>
             <th>N° Tracking / Link</th>
+            <th>Scan</th>
             <th>Apri</th>
             <th>Copia</th>
             <th>Invia</th>
@@ -304,6 +424,7 @@
             <td data-label="Mittente"><input type="text" placeholder="Nome mittente"></td>
             <td data-label="Destinatario"><input type="text" placeholder="Nome destinatario"></td>
             <td data-label="N° Tracking"><input type="text" placeholder="N° tracking o URL"></td>
+            <td data-label="Scan"><button class="scan-icon scan-barcode" title="Scansiona barcode">📷</button></td>
             <td data-label="Apri"><button class="apri-link">Vai</button></td>
             <td data-label="Copia"><button class="copia-link">Copia</button></td>
             <td data-label="Invia"><button class="invia-messaggio">Invia</button></td>
@@ -321,6 +442,23 @@
         <h3>Messaggio Tracking</h3>
         <textarea id="messaggio-text" readonly rows="8" style="width: 100%; padding: 10px; font-family: inherit; margin-bottom: 10px;"></textarea>
         <button id="copia-messaggio" class="add-row-btn">Copia Messaggio</button>
+      </div>
+    </div>
+
+    <!-- Modale per scanner barcode -->
+    <div id="scanner-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close-modal" id="close-scanner">&times;</span>
+        <h3>Scansiona Codice Lettera di Vettura</h3>
+        <p style="color: #ccc; font-size: 14px; margin-bottom: 15px;">
+          Posiziona il barcode davanti alla fotocamera o usa uno scanner USB
+        </p>
+        <div id="scanner-reader"></div>
+        <div id="scanner-result"></div>
+        <div class="scanner-controls">
+          <button id="start-scanner" class="start-scanner">▶ Avvia Scanner</button>
+          <button id="stop-scanner" class="stop-scanner" style="display: none;">⏹ Ferma Scanner</button>
+        </div>
       </div>
     </div>
     <a href="#" id="mobileSidebarToggle" class="mobile-home-link">MarterNeri</a>
@@ -360,6 +498,7 @@
             <td data-label="Mittente"><input type="text" placeholder="Nome mittente"></td>
             <td data-label="Destinatario"><input type="text" placeholder="Nome destinatario"></td>
             <td data-label="N° Tracking"><input type="text" placeholder="N° tracking o URL"></td>
+            <td data-label="Scan"><button class="scan-icon scan-barcode" title="Scansiona barcode">📷</button></td>
             <td data-label="Apri"><button class="apri-link">Vai</button></td>
             <td data-label="Copia"><button class="copia-link">Copia</button></td>
             <td data-label="Invia"><button class="invia-messaggio">Invia</button></td>
@@ -563,6 +702,179 @@ ${mittente}`;
           document.body.classList.remove('sidebar-open');
         });
       }
+
+      // ============================================
+      // SCANNER BARCODE - LETTERE DI VETTURA
+      // ============================================
+
+      let html5QrcodeScanner = null;
+      let currentScannerInput = null;
+      let isScanning = false;
+
+      // Gestione click su pulsante scanner
+      document.addEventListener('click', e => {
+        if (e.target.classList.contains('scan-barcode')) {
+          const row = e.target.closest('tr');
+          const inputs = row.querySelectorAll('input[type="text"]');
+          currentScannerInput = inputs[2]; // Campo tracking
+
+          // Apri modale scanner
+          const scannerModal = document.getElementById('scanner-modal');
+          scannerModal.style.display = 'flex';
+
+          // Reset risultato precedente
+          const resultDiv = document.getElementById('scanner-result');
+          resultDiv.style.display = 'none';
+          resultDiv.textContent = '';
+        }
+      });
+
+      // Gestione avvio scanner
+      document.getElementById('start-scanner').addEventListener('click', () => {
+        if (isScanning) return;
+
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 150 },
+          aspectRatio: 1.777778, // 16:9
+          supportedScanTypes: [
+            Html5QrcodeScanType.SCAN_TYPE_CAMERA
+          ],
+          // Supporto per vari tipi di barcode
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.QR_CODE,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.CODE_93,
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.ITF,
+            Html5QrcodeSupportedFormats.CODABAR
+          ]
+        };
+
+        html5QrcodeScanner = new Html5Qrcode("scanner-reader");
+
+        html5QrcodeScanner.start(
+          { facingMode: "environment" }, // Fotocamera posteriore su mobile
+          config,
+          (decodedText, decodedResult) => {
+            // Successo! Barcode scansionato
+            if (currentScannerInput) {
+              currentScannerInput.value = decodedText;
+              currentScannerInput.focus();
+            }
+
+            // Mostra risultato
+            const resultDiv = document.getElementById('scanner-result');
+            resultDiv.textContent = `✓ Scansionato: ${decodedText}`;
+            resultDiv.style.display = 'block';
+
+            // Ferma lo scanner dopo successo
+            setTimeout(() => {
+              stopScanner();
+              // Chiudi modale dopo 1.5 secondi
+              setTimeout(() => {
+                document.getElementById('scanner-modal').style.display = 'none';
+              }, 1500);
+            }, 500);
+          },
+          (errorMessage) => {
+            // Errore di scansione (normale durante il processo)
+            // Non mostrare errori continui all'utente
+          }
+        ).then(() => {
+          isScanning = true;
+          document.getElementById('start-scanner').style.display = 'none';
+          document.getElementById('stop-scanner').style.display = 'inline-block';
+        }).catch(err => {
+          alert('Errore nell\'avvio della fotocamera: ' + err);
+          console.error('Camera error:', err);
+        });
+      });
+
+      // Gestione stop scanner
+      function stopScanner() {
+        if (html5QrcodeScanner && isScanning) {
+          html5QrcodeScanner.stop().then(() => {
+            html5QrcodeScanner.clear();
+            isScanning = false;
+            document.getElementById('start-scanner').style.display = 'inline-block';
+            document.getElementById('stop-scanner').style.display = 'none';
+          }).catch(err => {
+            console.error('Error stopping scanner:', err);
+          });
+        }
+      }
+
+      document.getElementById('stop-scanner').addEventListener('click', stopScanner);
+
+      // Gestione chiusura modale scanner
+      document.getElementById('close-scanner').addEventListener('click', () => {
+        stopScanner();
+        document.getElementById('scanner-modal').style.display = 'none';
+      });
+
+      // Chiudi modale scanner cliccando fuori
+      document.getElementById('scanner-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'scanner-modal') {
+          stopScanner();
+          document.getElementById('scanner-modal').style.display = 'none';
+        }
+      });
+
+      // ============================================
+      // SUPPORTO SCANNER USB (input da tastiera)
+      // ============================================
+
+      let usbScannerBuffer = '';
+      let usbScannerTimeout = null;
+
+      // Rileva input rapido da scanner USB
+      document.addEventListener('keypress', (e) => {
+        // Ignora se l'utente sta scrivendo in un input
+        if (document.activeElement.tagName === 'INPUT' ||
+            document.activeElement.tagName === 'TEXTAREA') {
+          return;
+        }
+
+        // Scanner USB invia caratteri molto rapidamente e termina con Enter
+        if (e.key === 'Enter' && usbScannerBuffer.length > 0) {
+          // Trova il primo campo tracking vuoto e riempilo
+          const rows = document.querySelectorAll('#tabella-body tr');
+          for (let row of rows) {
+            const inputs = row.querySelectorAll('input[type="text"]');
+            const trackingInput = inputs[2];
+            if (trackingInput && !trackingInput.value.trim()) {
+              trackingInput.value = usbScannerBuffer.trim();
+              trackingInput.focus();
+
+              // Feedback visivo
+              trackingInput.style.backgroundColor = '#28a745';
+              trackingInput.style.color = '#fff';
+              setTimeout(() => {
+                trackingInput.style.backgroundColor = '';
+                trackingInput.style.color = '';
+              }, 1000);
+
+              break;
+            }
+          }
+          usbScannerBuffer = '';
+        } else {
+          // Accumula caratteri
+          usbScannerBuffer += e.key;
+
+          // Reset buffer dopo 100ms di inattività (distingue scanner da digitazione umana)
+          clearTimeout(usbScannerTimeout);
+          usbScannerTimeout = setTimeout(() => {
+            usbScannerBuffer = '';
+          }, 100);
+        }
+      });
+
     });
   </script>
 </body>
