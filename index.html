@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Solespress – Tracking Spedizioni</title>
-  <!-- Libreria per scansione barcode -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- Libreria ZXing per scansione barcode (più affidabile su mobile) -->
+  <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -79,6 +79,13 @@
       border-radius: 8px;
       overflow: hidden;
       background-color: #000;
+      position: relative;
+    }
+
+    #scanner-video {
+      width: 100%;
+      height: auto;
+      display: block;
     }
 
     #scanner-result {
@@ -565,7 +572,9 @@
       <div id="scanner-loading" style="text-align: center; padding: 20px; color: #FFD700; font-size: 16px;">
         📷 Attivazione fotocamera in corso...
       </div>
-      <div id="scanner-reader" style="display: none;"></div>
+      <div id="scanner-reader" style="display: none;">
+        <video id="scanner-video" playsinline autoplay></video>
+      </div>
       <div id="scanner-result"></div>
       <div class="scanner-controls">
         <button id="stop-scanner" class="stop-scanner" style="display: none;">⏹ Ferma Scanner</button>
@@ -771,10 +780,11 @@ ${mittente}`;
       });
 
       // ============================================
-      // SCANNER BARCODE - LETTERE DI VETTURA
+      // SCANNER BARCODE - LETTERE DI VETTURA (ZXing)
       // ============================================
 
-      let html5QrcodeScanner = null;
+      let videoStream = null;
+      let codeReader = null;
       let currentScannerInput = null;
       let isScanning = false;
 
@@ -805,31 +815,77 @@ ${mittente}`;
         }
       });
 
-      // Funzione per avviare lo scanner
-      function startScanner() {
+      // Funzione per avviare lo scanner con ZXing
+      async function startScanner() {
         if (isScanning) return;
 
-        // Configurazione semplificata - la libreria usa automaticamente tutti i formati
-        const config = {
-          fps: 10,
-          qrbox: { width: 250, height: 150 }
-        };
+        try {
+          // Crea il code reader ZXing
+          const hints = new Map();
+          const formats = [
+            ZXing.BarcodeFormat.CODE_128,
+            ZXing.BarcodeFormat.CODE_39,
+            ZXing.BarcodeFormat.CODE_93,
+            ZXing.BarcodeFormat.EAN_13,
+            ZXing.BarcodeFormat.EAN_8,
+            ZXing.BarcodeFormat.UPC_A,
+            ZXing.BarcodeFormat.UPC_E,
+            ZXing.BarcodeFormat.QR_CODE,
+            ZXing.BarcodeFormat.ITF,
+            ZXing.BarcodeFormat.CODABAR
+          ];
+          hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
 
-        html5QrcodeScanner = new Html5Qrcode("scanner-reader");
+          codeReader = new ZXing.BrowserMultiFormatReader(hints);
 
-        html5QrcodeScanner.start(
-          { facingMode: "environment" },
-          config,
-          (decodedText, decodedResult) => {
-            // Successo! Barcode scansionato
+          const video = document.getElementById('scanner-video');
+
+          // Richiedi fotocamera posteriore
+          const constraints = {
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            }
+          };
+
+          videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+          video.srcObject = videoStream;
+
+          isScanning = true;
+          document.getElementById('scanner-loading').style.display = 'none';
+          document.getElementById('scanner-reader').style.display = 'block';
+          document.getElementById('stop-scanner').style.display = 'inline-block';
+
+          // Decodifica continua
+          scanBarcodeFromVideo();
+
+        } catch (err) {
+          document.getElementById('scanner-loading').style.display = 'none';
+          alert('Errore accesso fotocamera: ' + err.message + '\n\nVerifica i permessi nelle impostazioni del browser.');
+          console.error('Camera error:', err);
+          isScanning = false;
+        }
+      }
+
+      // Funzione per decodificare barcode dal video
+      async function scanBarcodeFromVideo() {
+        if (!isScanning) return;
+
+        try {
+          const video = document.getElementById('scanner-video');
+          const result = await codeReader.decodeFromVideoElement(video);
+
+          if (result) {
+            // Barcode scansionato con successo
             if (currentScannerInput) {
-              currentScannerInput.value = decodedText;
+              currentScannerInput.value = result.text;
               currentScannerInput.focus();
             }
 
             // Mostra risultato
             const resultDiv = document.getElementById('scanner-result');
-            resultDiv.textContent = `✓ Scansionato: ${decodedText}`;
+            resultDiv.textContent = `✓ Scansionato: ${result.text}`;
             resultDiv.style.display = 'block';
 
             // Ferma lo scanner dopo successo
@@ -839,33 +895,38 @@ ${mittente}`;
                 document.getElementById('scanner-modal').style.display = 'none';
               }, 1500);
             }, 500);
-          },
-          (errorMessage) => {
-            // Errore di scansione (normale durante il processo)
           }
-        ).then(() => {
-          isScanning = true;
-          document.getElementById('scanner-loading').style.display = 'none';
-          document.getElementById('scanner-reader').style.display = 'block';
-          document.getElementById('stop-scanner').style.display = 'inline-block';
-        }).catch(err => {
-          document.getElementById('scanner-loading').style.display = 'none';
-          alert('Errore fotocamera: ' + err);
-          console.error('Camera error:', err);
-        });
+        } catch (err) {
+          // Continua a provare se non trova barcode
+          if (isScanning) {
+            requestAnimationFrame(scanBarcodeFromVideo);
+          }
+        }
       }
 
       // Gestione stop scanner
       function stopScanner() {
-        if (html5QrcodeScanner && isScanning) {
-          html5QrcodeScanner.stop().then(() => {
-            html5QrcodeScanner.clear();
-            isScanning = false;
-            document.getElementById('stop-scanner').style.display = 'none';
-          }).catch(err => {
-            console.error('Error stopping scanner:', err);
-          });
+        isScanning = false;
+
+        // Ferma il video stream
+        if (videoStream) {
+          videoStream.getTracks().forEach(track => track.stop());
+          videoStream = null;
         }
+
+        // Reset video element
+        const video = document.getElementById('scanner-video');
+        if (video) {
+          video.srcObject = null;
+        }
+
+        // Reset code reader
+        if (codeReader) {
+          codeReader.reset();
+          codeReader = null;
+        }
+
+        document.getElementById('stop-scanner').style.display = 'none';
       }
 
       document.getElementById('stop-scanner').addEventListener('click', stopScanner);
