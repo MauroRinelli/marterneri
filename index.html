@@ -161,6 +161,22 @@
       font-weight: 700;
     }
 
+    .logo-header {
+      margin: 0 0 25px 0;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .logo-header img {
+      max-width: 300px;
+      height: auto;
+      transition: transform 0.2s;
+    }
+
+    .logo-header img:hover {
+      transform: scale(1.05);
+    }
+
     .shipping-table {
       width: 100%;
       border-collapse: collapse;
@@ -304,6 +320,14 @@
       .shipping-table-section h2 {
         font-size: 1.3rem;
         margin-bottom: 15px;
+      }
+
+      .logo-header {
+        margin-bottom: 15px;
+      }
+
+      .logo-header img {
+        max-width: 200px;
       }
 
       .shipping-table {
@@ -521,7 +545,9 @@
 <body>
 
   <section id="griglia-spedizioni" class="shipping-table-section">
-    <h2>Tabella Spedizioni</h2>
+    <div class="logo-header" onclick="refreshPage()">
+      <img src="media/solespress7272push.png" alt="Solespress Tracking" title="Clicca per aggiornare">
+    </div>
     <table class="shipping-table">
       <thead>
         <tr>
@@ -583,6 +609,16 @@
   </div>
 
   <script>
+    // Funzione per refresh pagina
+    function refreshPage() {
+      // Cancella tutti i campi input
+      const inputs = document.querySelectorAll('#tabella-body input[type="text"]');
+      inputs.forEach(input => input.value = '');
+
+      // Ricarica la pagina
+      location.reload();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const btn = document.getElementById('aggiungi-riga');
       const body = document.getElementById('tabella-body');
