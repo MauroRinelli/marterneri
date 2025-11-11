@@ -809,23 +809,10 @@ ${mittente}`;
       function startScanner() {
         if (isScanning) return;
 
+        // Configurazione semplificata - la libreria usa automaticamente tutti i formati
         const config = {
           fps: 10,
-          qrbox: { width: 250, height: 150 },
-          aspectRatio: 1.777778,
-          // Supporto per vari tipi di barcode
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.QR_CODE,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.CODE_93,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.ITF,
-            Html5QrcodeSupportedFormats.CODABAR
-          ]
+          qrbox: { width: 250, height: 150 }
         };
 
         html5QrcodeScanner = new Html5Qrcode("scanner-reader");
@@ -863,7 +850,7 @@ ${mittente}`;
           document.getElementById('stop-scanner').style.display = 'inline-block';
         }).catch(err => {
           document.getElementById('scanner-loading').style.display = 'none';
-          alert('Errore nell\'avvio della fotocamera: ' + err);
+          alert('Errore fotocamera: ' + err);
           console.error('Camera error:', err);
         });
       }
